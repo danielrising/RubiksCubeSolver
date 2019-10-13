@@ -1,9 +1,12 @@
 #include <iostream>
+#include "Cube\Cube3x3.h"
 
 int main() {
 	
-	std::cout << "Hello World!" << std::endl;
+	std::cout << "Hello" << std::endl;
 
-	return 0;
+	Cube3x3 cube;
+
+	std::cin;
 
 }
