@@ -1,11 +1,13 @@
 #include <iostream>
 #include "Cube\Cube3.h"
 
-int main() {
-	
-	int integer = 13 / 6;
+int main()
+{
 
-	std::cout << integer << std::endl;
+	std::cout << true + true << std::endl;
 
 	Cube3 cube;
+
+	std::cout << cube;
+
 }
