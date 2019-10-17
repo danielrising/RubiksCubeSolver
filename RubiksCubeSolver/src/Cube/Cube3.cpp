@@ -60,15 +60,17 @@ Cube3::Cube3()
 void Cube3::Rotate(const unsigned char &mov)
 {
 	// edges
-
-	voxel eTemp = e[ edgeTurnPerm[GET_SIDE_INDEX(mov) + GET_MOVE_COUNT(mov)]];
-	e[edgeTurnPerm[mov 0]] = e[edgeTurnPerm[mov][1]];
-	e[edgeTurnPerm[mov][1]] = e[edgeTurnPerm[mov][2]];
-	e[edgeTurnPerm[mov][2]] = e[edgeTurnPerm[mov][3]];
-	e[edgeTurnPerm[mov][3]] = eTemp;
+	voxel eTemp = e[cornerTurnPerm[E_GET_MOVE_INDEX(mov, 0)]];
+	e[cornerTurnPerm[E_GET_SIDE_INDEX(mov)] + 0] = e[cornerTurnPerm[E_GET_MOVE_INDEX(mov, 1)]];
+	e[cornerTurnPerm[E_GET_SIDE_INDEX(mov)] + 1] = e[cornerTurnPerm[E_GET_MOVE_INDEX(mov, 2)]];
+	e[cornerTurnPerm[E_GET_SIDE_INDEX(mov)] + 2] = e[cornerTurnPerm[E_GET_MOVE_INDEX(mov, 3)]];
+	e[cornerTurnPerm[E_GET_SIDE_INDEX(mov)] + 3] = eTemp;
 
 	// corners
-
-
+	voxel cTemp = c[edgeTurnPerm[C_GET_MOVE_INDEX(mov, 0)]];
+	c[cornerTurnPerm[C_GET_SIDE_INDEX(mov)] + 0] = c[cornerTurnPerm[C_GET_MOVE_INDEX(mov, 1)]];
+	c[cornerTurnPerm[C_GET_SIDE_INDEX(mov)] + 1] = c[cornerTurnPerm[C_GET_MOVE_INDEX(mov, 2)]];
+	c[cornerTurnPerm[C_GET_SIDE_INDEX(mov)] + 2] = c[cornerTurnPerm[C_GET_MOVE_INDEX(mov, 3)]];
+	c[cornerTurnPerm[C_GET_SIDE_INDEX(mov)] + 3] = cTemp;
 
 }

@@ -6,8 +6,10 @@
 #define E_PER_FACE 4
 #define C_PER_FACE 4
 
-#define GET_SIDE_INDEX(x) x % FACES * E_PER_FACE
-#define GET_MOVE_COUNT(x) floor(x / FACES)
+#define E_GET_SIDE_INDEX(x) x % FACES * E_PER_FACE
+#define E_GET_MOVE_INDEX(x, y) E_GET_SIDE_INDEX(x) + (y + (int)ceil(x / FACES)) % E_PER_FACE
+#define C_GET_SIDE_INDEX(x) x % FACES * C_PER_FACE
+#define C_GET_MOVE_INDEX(x, y) C_GET_SIDE_INDEX(x) + (y + (int)ceil(x / FACES)) % C_PER_FACE
 
 class Cube3
 {
