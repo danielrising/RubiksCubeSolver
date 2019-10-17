@@ -6,6 +6,9 @@
 #define E_PER_FACE 4
 #define C_PER_FACE 4
 
+#define GET_SIDE_INDEX(x) x % FACES * E_PER_FACE
+#define GET_MOVE_COUNT(x) floor(x / FACES)
+
 class Cube3
 {
 private:
@@ -26,12 +29,12 @@ private:
 	voxel e[E_SIZE];
 
 	static const unsigned char faces[FACES];
-	static const unsigned char edgeTurnPerm[FACES][E_PER_FACE];
-	static const unsigned char cornerTurnPerm[FACES][C_PER_FACE];
+	static const unsigned char edgeTurnPerm[FACES * E_PER_FACE];
+	static const unsigned char cornerTurnPerm[FACES * C_PER_FACE];
 
 public:
 	Cube3();
 
-	void MoveEdges(int mov);
+	void Rotate(const unsigned char &mov);
 
 };

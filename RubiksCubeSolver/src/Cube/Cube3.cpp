@@ -1,4 +1,5 @@
 #include "Cube3.h"
+#include "cmath"
 
 inline void Cube3::voxel::SetId(const unsigned char& newId)
 {
@@ -21,8 +22,24 @@ inline const unsigned char& Cube3::voxel::GetR()
 }
 
 const unsigned char Cube3::faces[FACES] = { 'U', 'F', 'R', 'D', 'B', 'L' };
-const unsigned char Cube3::edgeTurnPerm[FACES][E_PER_FACE] = { {0, 2, 3, 1}, {3, 7, 11, 6}, {2, 5, 10, 7}, {9, 11, 10, 8}, {0, 4, 8, 5}, {1, 6, 9, 4} };
-const unsigned char Cube3::cornerTurnPerm[FACES][C_PER_FACE] = { {0, 1, 3, 2}, {2, 3, 7, 6}, {3, 1, 5, 7}, {4, 6, 7, 5}, {1, 0, 4, 5}, {0, 2, 6, 4} };
+
+const unsigned char Cube3::edgeTurnPerm[FACES * E_PER_FACE] = { 
+	0, 2, 3, 1,		// U
+	3, 7, 11, 6,	// F
+	2, 5, 10, 7,	// R
+	9, 11, 10, 8,	// D
+	0, 4, 8, 5,		// B
+	1, 6, 9, 4		// L
+};
+
+const unsigned char Cube3::cornerTurnPerm[FACES * C_PER_FACE] = { 
+	0, 1, 3, 2,		// U
+	2, 3, 7, 6,		// F
+	3, 1, 5, 7,		// R
+	4, 6, 7, 5,		// D
+	1, 0, 4, 5,		// B
+	0, 2, 6, 4		// L
+};
 
 Cube3::Cube3()
 {
@@ -40,11 +57,18 @@ Cube3::Cube3()
 }
 
 // mov 0 = U, mov 1 = F ... mov 6 = U2 ... mov 12 = U3 (U')
-void Cube3::MoveEdges(int mov)
+void Cube3::Rotate(const unsigned char &mov)
 {
-	voxel eTemp = c[ edgeTurnPerm[ mov % FACES ][ (0 + mov / FACES) % 4 ] ];
-	c[edgeTurnPerm[mov][0]] = c[edgeTurnPerm[mov][1]];
-	c[edgeTurnPerm[mov][1]] = c[edgeTurnPerm[mov][2]];
-	c[edgeTurnPerm[mov][2]] = c[edgeTurnPerm[mov][3]];
-	c[edgeTurnPerm[mov][3]] = eTemp;
+	// edges
+
+	voxel eTemp = e[ edgeTurnPerm[GET_SIDE_INDEX(mov) + GET_MOVE_COUNT(mov)]];
+	e[edgeTurnPerm[mov 0]] = e[edgeTurnPerm[mov][1]];
+	e[edgeTurnPerm[mov][1]] = e[edgeTurnPerm[mov][2]];
+	e[edgeTurnPerm[mov][2]] = e[edgeTurnPerm[mov][3]];
+	e[edgeTurnPerm[mov][3]] = eTemp;
+
+	// corners
+
+
+
 }
