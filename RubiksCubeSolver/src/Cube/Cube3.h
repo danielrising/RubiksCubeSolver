@@ -3,6 +3,8 @@
 #define C_SIZE 8
 #define E_SIZE 12
 #define FACES 6
+#define E_PER_FACE 4
+#define C_PER_FACE 4
 
 class Cube3
 {
@@ -24,12 +26,12 @@ private:
 	voxel e[E_SIZE];
 
 	static const unsigned char faces[FACES];
-	static const unsigned char edgeTurnPerm[FACES][4];
-	static const unsigned char cornerTurnPerm[FACES][4];
+	static const unsigned char edgeTurnPerm[FACES][E_PER_FACE];
+	static const unsigned char cornerTurnPerm[FACES][C_PER_FACE];
 
 public:
 	Cube3();
 
-	void move(int mov);
+	void MoveEdges(int mov);
 
 };
