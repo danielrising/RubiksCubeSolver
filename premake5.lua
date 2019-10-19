@@ -24,12 +24,20 @@ project "RubiksCubeSolver"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 	
+	pchheader "rcspch.h"
+    pchsource "%{prj.name}/src/rcspch.cpp"
+	
 	files
     {
         "%{prj.name}/src/**.h",
         "%{prj.name}/src/**.cpp"
     }
 
+	includedirs
+    {
+        "%{prj.name}/src"
+    }
+	
 	filter "system:windows"
         systemversion "latest"
 

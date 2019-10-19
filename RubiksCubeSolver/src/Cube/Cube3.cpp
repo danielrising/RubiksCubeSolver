@@ -1,32 +1,5 @@
+#include "rcspch.h"
 #include "Cube3.h"
-#include "cmath"
-
-inline void Cube3::Voxel::SetId(const unsigned char& newId)
-{
-	_id = newId;
-}
-
-inline void Cube3::Voxel::SetR(const unsigned char& newR)
-{
-	_r = newR;
-}
-
-inline const unsigned char& Cube3::Voxel::GetId()
-{
-	return _id;
-}
-
-inline const unsigned char& Cube3::Voxel::GetR()
-{
-	return _r;
-}
-
-const char* Cube3::Voxel::ToString() const
-{
-	unsigned char id = 0;
-
-	return "[ " + (int)id;
-}
 
 const unsigned char Cube3::faces[FACES] = { 'U', 'F', 'R', 'D', 'B', 'L' };
 
@@ -49,7 +22,11 @@ const unsigned char Cube3::cornerTurnPerm[FACES * C_PER_FACE] =
 	1, 0, 4, 5,		// B
 	0, 2, 6, 4		// L
 };
+/*
+static const unsigned char cornerTwistPerm[];
 
+static const unsigned char edgeTwistPerm[];
+*/
 Cube3::Cube3()
 {
 	for (int i = 0; i < C_SIZE; ++i)
@@ -69,28 +46,40 @@ Cube3::Cube3()
 void Cube3::Rotate(const unsigned char &mov)
 {
 	// edges
-	Voxel eTemp = e[cornerTurnPerm[E_GET_MOVE_INDEX(mov, 0)]];
-	for (int i = 0; i < E_PER_FACE - 1; ++i)
+	Voxel eMoved[E_PER_FACE];
+	for (int i = 0; i < E_PER_FACE; ++i)
 	{
-		e[cornerTurnPerm[E_GET_SIDE_INDEX(mov)] + i] = e[cornerTurnPerm[E_GET_MOVE_INDEX(mov, i + 1)]];
+		eMoved[i] = e[edgeTurnPerm[E_GET_MOVE_INDEX(mov, i)]];
 	}
-	e[cornerTurnPerm[E_GET_SIDE_INDEX(mov)] + 3] = eTemp;
+
+	for (int i = 0; i < E_PER_FACE; ++i)
+	{
+		e[edgeTurnPerm[E_GET_SIDE_INDEX(mov) + i]] = eMoved[i];
+	}
 
 	// corners
-	Voxel cTemp = c[edgeTurnPerm[C_GET_MOVE_INDEX(mov, 0)]];
-	for (int i = 0; i < C_PER_FACE - 1; ++i)
+	Voxel cMoved[C_PER_FACE];
+	for (int i = 0; i < C_PER_FACE; ++i)
 	{
-		c[cornerTurnPerm[C_GET_SIDE_INDEX(mov)] + i] = c[cornerTurnPerm[C_GET_MOVE_INDEX(mov, i + 1)]];
+		cMoved[i] = c[cornerTurnPerm[C_GET_MOVE_INDEX(mov, i)]];
 	}
-	c[cornerTurnPerm[C_GET_SIDE_INDEX(mov)] + 3] = cTemp;
+
+	for (int i = 0; i < C_PER_FACE; ++i)
+	{
+		c[cornerTurnPerm[C_GET_SIDE_INDEX(mov) + i]] = cMoved[i];
+	}
 }
 
 std::ostream& operator <<(std::ostream& os, const Cube3& cube)
 {
+	os << "Corners:" << std::endl;
+ 
 	for (int i = 0; i < C_SIZE; ++i)
 	{
 		os << cube.c[i].ToString() << std::endl;
 	}
+
+	os << "Edges:" << std::endl;
 
 	for (int i = 0; i < E_SIZE; ++i)
 	{
