@@ -20,6 +20,9 @@ int main()
 	bool shouldClose = false;
 	while (!shouldClose)
 	{
+		
+		// Getline() och .substr() borde användas istället
+
 		std::string input;
 		std::cin >> input;
 
@@ -41,10 +44,11 @@ int main()
 		else if (input == "rotate")
 		{
 			std::string move;
+			std::cout << "What move would you like to perform?" << std::endl;
 			std::cin >> move;
 			if (isNumber(move))
 			{
-				std::cout << stoi(move) << std::endl;
+				cube.Rotate(stoi(move));
 			}
 		}
 	}
