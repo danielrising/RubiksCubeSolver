@@ -1,0 +1,7 @@
+.vs
+RubiksCubeSolver.sln
+RubiksCubeSolver/RubiksCubeSolver.vcxproj
+RubiksCubeSolver/RubiksCubeSolver.vcxproj.filters
+RubiksCubeSolver/RubiksCubeSolver.vcxproj.user
+bin-int
+bin
