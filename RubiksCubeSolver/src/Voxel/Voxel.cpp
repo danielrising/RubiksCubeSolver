@@ -1,4 +1,5 @@
 #include "rcspch.h"
+
 #include "Voxel.h"
 
 void Voxel::SetId(const unsigned char& newId)

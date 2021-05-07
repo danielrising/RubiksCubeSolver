@@ -1,7 +1,5 @@
 #pragma once
 
-#include "rcspch.h"
-
 struct Voxel
 {
 private:

@@ -1,4 +1,5 @@
 #include "rcspch.h"
+
 #include "Cube\Cube3.h"
 
 bool isNumber(const std::string &str)
@@ -30,7 +31,23 @@ int main()
 
 		else if (input == "print")
 		{
-			std::cout << cube << std::endl << std::endl;
+			cube.ConsolePrint();
+			cube.ConsoleRender();
+			std::cout << cube.IsSolved(1) << std::endl;
+		}
+
+		else if (input == "scramble")
+		{
+			cube.Scramble40();
+		}
+
+		else if (input == "solve") {
+			std::vector<short int> solution;
+			IterativeDeepening(cube, 10, 1, solution);
+
+			for (int i = 0; i < solution.size(); i++) {
+				std::cout << solution[i] << " - ";
+			}
 		}
 
 		else if ((input == "help") || (input == "h"))
@@ -40,11 +57,11 @@ int main()
 
 		else if (input == "rotate")
 		{
-			std::string move;
-			std::cin >> move;
-			if (isNumber(move))
+			std::string move, power;
+			std::cin >> move >> power;
+			if (isNumber(move) && isNumber(power))
 			{
-				cube.Rotate(stoi(move));
+				cube.Rotate(stoi(move), stoi(power));
 			}
 		}
 	}
