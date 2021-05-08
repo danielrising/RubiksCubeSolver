@@ -212,14 +212,26 @@ void Cube3::Rotate(const unsigned char &mov, const unsigned char& pow)
 		Orient(mov);
 		Move(mov);
 	}
-	// std::cout << "Successfully rotated the " << faces[mov] << "-Side " << (short)pow << " quarter clockise turn(s)." << std::endl;
 }
 
-void Cube3::Scramble40()
+void Cube3::Scramble(short int amount, bool log)
 {
+	// Initilize random seed using current time
 	srand(time(NULL));
-	for (int i = 0; i < 40; i++) {
-		Rotate(rand() % FACES, 1);
+
+	for (int i = 0; i < amount; i++) {
+
+		short int move = rand() % FACES; // Random move, 0 to (including) 5
+		short int pow = 1 + rand() % 3; // Random power of that move, 1 to (inluding) 3
+
+		Rotate(move, pow);
+
+		if (log) {
+			std::cout << move << "*" << pow << " : ";
+		}
+	}
+	if (log) {
+		std::cout << std::endl;
 	}
 }
 
@@ -245,14 +257,6 @@ bool Cube3::IsSolved(short int solveState)
 			if (e[i].GetR() != 0) {
 				return false;
 			}
-		}
-		return true;
-	}
-
-	// Test case
-	if (solveState == 1) {
-		if (c[7].GetId() != 0) {
-			return false;
 		}
 		return true;
 	}
@@ -317,17 +321,21 @@ void IterativeDeepening(Cube3 position, short int maxDepth, short int solveState
 {
 	moves.resize(maxDepth);
 	for (int i = 0; i < maxDepth; i++) {
+		moves[i] = -1;
+	}
+	for (int i = 0; i < maxDepth; i++) {
 		std::cout << "Current depth: " << i << std::endl;
-		position = Treesearch(position, i, solveState, moves);
+		position = Treesearch(position, i, i, solveState, moves);
 
 		if (position.IsSolved(solveState)) {
 			position.ConsolePrint();
 			position.ConsoleRender();
+			break;
 		}
 	}
 }
 
-Cube3 Treesearch(Cube3 position, short int depth, short int solveState, std::vector<short int>& moves)
+Cube3 Treesearch(Cube3 position, short int maxDepth, short int depth, short int solveState, std::vector<short int>& moves)
 {
 	if (depth == 0) {
 		if (position.IsSolved(solveState)) {
@@ -337,18 +345,21 @@ Cube3 Treesearch(Cube3 position, short int depth, short int solveState, std::vec
 	else if (depth > 0){
 		if (true && true) { // prunes
 			for (int i = 0; i < FACES; i++) {
-				if (depth < 0 || depth > 9) {
-					std::cout << "Wrong index!" << std::endl;
-				}
-				else {
-					moves[depth] = i;
-				}
-				Cube3 result = Treesearch(position, depth - 1, solveState, moves);
+				for (int j = 1; j < 4; j++) {
+					position.Rotate(i, j);
+					moves[maxDepth - depth] = i + (j - 1) * FACES;
 
-				if (result.IsSolved(solveState)) {
-					return result;
+					Cube3 result = Treesearch(position, maxDepth, depth - 1, solveState, moves);
+
+					if (result.IsSolved(solveState)) {
+						return result;
+					}
+					else {
+						position.Rotate(i, 4 - j);
+					}
 				}
 			}
+			return position;
 		}
 		return position;
 	}

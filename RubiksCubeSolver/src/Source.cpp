@@ -31,19 +31,17 @@ int main()
 
 		else if (input == "print")
 		{
-			cube.ConsolePrint();
 			cube.ConsoleRender();
-			std::cout << cube.IsSolved(1) << std::endl;
 		}
 
 		else if (input == "scramble")
 		{
-			cube.Scramble40();
+			cube.Scramble(6, true);
 		}
 
 		else if (input == "solve") {
 			std::vector<short int> solution;
-			IterativeDeepening(cube, 10, 1, solution);
+			IterativeDeepening(cube, 10, 0, solution);
 
 			for (int i = 0; i < solution.size(); i++) {
 				std::cout << solution[i] << " - ";
