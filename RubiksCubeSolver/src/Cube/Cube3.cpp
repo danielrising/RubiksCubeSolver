@@ -138,7 +138,7 @@ std::vector<char> Cube3::GenerateMatrix()
 
 	// Facelet coords for corners, using priorities from cornerColors.
 	// Coordinates uses convention from showLayout (in ConsoleRender) and rendered.
-	const unsigned short cornerFaceletCoords[C_SIZE][3][2] = {
+	const char cornerFaceletCoords[C_SIZE][3][2] = {
 		{{0, 0}, {4, 6}, {1, 2}},
 		{{0, 2}, {3, 0}, {4, 8}},
 		{{0, 6}, {1, 8}, {2, 0}},
@@ -151,7 +151,7 @@ std::vector<char> Cube3::GenerateMatrix()
 
 	// Facelet coords for edges, using priorities from edgeColors.
 	// Coordinates uses convention from showLayout and rendered.
-	const unsigned short edgeFaceletCoords[E_SIZE][2][2] = {
+	const char edgeFaceletCoords[E_SIZE][2][2] = {
 		{{0, 1}, {4, 7}},
 		{{0, 3}, {1, 5}},
 		{{0, 5}, {3, 3}},
@@ -280,6 +280,8 @@ bool Cube3::IsSolved(short int solveState)
 		}
 		return true;
 	}
+	std::cout << "Solve state not found!" << std::endl;
+	return false;
 }
 
 void Cube3::ConsoleRender()
@@ -290,7 +292,7 @@ void Cube3::ConsoleRender()
 	//		G	 
 	//		Y
 	// -1 = blank, rest follows index from faceColors
-	const signed short showLayout[4][3] = {
+	const char showLayout[4][3] = {
 		{-1, 4, -1},
 		{ 1, 0, 3 },
 		{-1, 2, -1},
@@ -373,6 +375,8 @@ Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::ve
 			return position;
 		}
 	}
+	std::cout << "Solution not found in " << maxDepth << " layers of depth!" << std::endl;
+	return position;
 }
 
 // Recursive function to be used in combination with Iterative deepening (IDA) - Only tests if solved at last function call (depth = 0)
