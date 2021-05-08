@@ -26,7 +26,7 @@ public:
 
 	// Manipulations
 	void Rotate(const unsigned char &mov, const unsigned char &pow);
-	void Scramble(short int amount, bool log);
+	void Scramble(short int amount, int randSeed, bool log);
 
 	// Reads
 	bool IsSolved(short int solveState);
@@ -35,5 +35,5 @@ public:
 };
 
 // Solver-algorithms
-void IterativeDeepening(Cube3 position, short int depth, short int solveState, std::vector<short int>& moves);
-Cube3 Treesearch(Cube3 position, short int maxDepth, short int depth, short int solveState, std::vector<short int>& moves);
+void IterativeDeepening(Cube3 position, short int depth, short int solveState, std::vector<std::vector<short int>>& moves, const std::vector<std::vector<short int>>& possibleMoves);
+Cube3 Treesearch(Cube3 position, short int maxDepth, short int depth, short int solveState, std::vector<std::vector<short int>>& moves, const std::vector<std::vector<short int>>& possibleMoves);

@@ -36,15 +36,20 @@ int main()
 
 		else if (input == "scramble")
 		{
-			cube.Scramble(6, true);
+			cube.Scramble(5, 0, true);
 		}
 
 		else if (input == "solve") {
-			std::vector<short int> solution;
-			IterativeDeepening(cube, 10, 0, solution);
+			std::vector<std::vector<short int>> possibleMoves = { 
+				{0, 1}, {1, 1}, {2, 1}, {3, 1}, {4, 1}, {5, 1}, 
+				{0, 2}, {1, 2}, {2, 2}, {3, 2}, {4, 2}, {5, 2}, 
+				{0, 3}, {1, 3}, {2, 3}, {3, 3}, {4, 3}, {5, 3} };
+
+			std::vector<std::vector<short int>> solution;
+			IterativeDeepening(cube, 10, 0, solution, possibleMoves);
 
 			for (int i = 0; i < solution.size(); i++) {
-				std::cout << solution[i] << " - ";
+				std::cout << solution[i][0] << "*" << solution[i][1] << " - ";
 			}
 		}
 

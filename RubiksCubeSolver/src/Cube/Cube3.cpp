@@ -214,10 +214,10 @@ void Cube3::Rotate(const unsigned char &mov, const unsigned char& pow)
 	}
 }
 
-void Cube3::Scramble(short int amount, bool log)
+void Cube3::Scramble(short int amount, int randSeed, bool log)
 {
-	// Initilize random seed using current time
-	srand(time(NULL));
+	// Initilize random seed
+	srand(randSeed);
 
 	for (int i = 0; i < amount; i++) {
 
@@ -317,51 +317,62 @@ void Cube3::ConsolePrint()
 
 /* SOLVER-ALGORITHMS */
 
-void IterativeDeepening(Cube3 position, short int maxDepth, short int solveState, std::vector<short int>& moves)
+// Calls treesearch with increasing depth, for breadth-first results.
+// Makes sure that the first found solution is the shortest actual solution for that sub-problem.
+void IterativeDeepening(Cube3 position, short int maxDepth, short int solveState, std::vector<std::vector<short int>>& moves, const std::vector<std::vector<short int>>& possibleMoves)
 {
+	// One move each layer of depth, initialize with a number not corresponding to any move.
 	moves.resize(maxDepth);
 	for (int i = 0; i < maxDepth; i++) {
-		moves[i] = -1;
+		std::vector<short int> placeHolder = { -1, -1 };
+		moves[i] = placeHolder;
 	}
+
+	// Iterative deepening
 	for (int i = 0; i < maxDepth; i++) {
 		std::cout << "Current depth: " << i << std::endl;
-		position = Treesearch(position, i, i, solveState, moves);
+		position = Treesearch(position, i, i, solveState, moves, possibleMoves);
 
 		if (position.IsSolved(solveState)) {
-			position.ConsolePrint();
-			position.ConsoleRender();
+			// position.ConsolePrint();
+			// position.ConsoleRender();
 			break;
 		}
 	}
 }
 
-Cube3 Treesearch(Cube3 position, short int maxDepth, short int depth, short int solveState, std::vector<short int>& moves)
+// Recursive function to be used in combination with Iterative deepening (IDA) - Only tests if solved at last function call (depth = 0)
+Cube3 Treesearch(Cube3 position, short int maxDepth, short int depth, short int solveState, std::vector<std::vector<short int>>& moves, const std::vector<std::vector<short int>>& possibleMoves)
 {
+	// Iterative deepening...
 	if (depth == 0) {
-		if (position.IsSolved(solveState)) {
+		return position;
+	}
+
+	else {
+		// Prunes - Don't go deeper if we can already know it's unsolvable with remaining depth.
+		if (false && false) {
 			return position;
 		}
-	}
-	else if (depth > 0){
-		if (true && true) { // prunes
-			for (int i = 0; i < FACES; i++) {
-				for (int j = 1; j < 4; j++) {
-					position.Rotate(i, j);
-					moves[maxDepth - depth] = i + (j - 1) * FACES;
 
-					Cube3 result = Treesearch(position, maxDepth, depth - 1, solveState, moves);
+		// Call each possible move from this position.
+		for (int i = 0; i < possibleMoves.size(); i++) {
+			
+			// Rotate.
+			position.Rotate(possibleMoves[i][0], possibleMoves[i][1]);
+			short int movesIndex = maxDepth - depth;
+			moves[movesIndex] = possibleMoves[i]; // Save rotation in a readable format
 
-					if (result.IsSolved(solveState)) {
-						return result;
-					}
-					else {
-						position.Rotate(i, 4 - j);
-					}
-				}
+			// Recursion
+			Cube3 result = Treesearch(position, maxDepth, depth - 1, solveState, moves, possibleMoves);
+
+			if (result.IsSolved(solveState)) { //Solved? break recursion.
+				return result;
 			}
-			return position;
+			else { // Undo rotation
+				position.Rotate(possibleMoves[i][0], 4 - possibleMoves[i][1]);
+			}
 		}
 		return position;
 	}
-	return position;
 }
