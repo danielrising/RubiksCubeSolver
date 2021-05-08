@@ -7,6 +7,10 @@
 #define E_SIZE 12
 #define C_PER_FACE 4
 #define E_PER_FACE 4
+#define FACELET_PER_CORNER 3
+#define FACELET_PER_EDGE 2
+
+#define FACELET_PER_FACE (C_PER_FACE + E_PER_FACE + 1)
 
 /*3X3X3 CUBE CLASS*/
 class Cube3
@@ -15,11 +19,9 @@ private:
 	Voxel c[C_SIZE];
 	Voxel e[E_SIZE];
 
-	char generatedMatrix[FACES][9];
-
 	void Orient(const unsigned char& mov);
 	void Move(const unsigned char& mov);
-	void GenerateMatrix();
+	std::vector<char> GenerateMatrix();
 
 public:
 	Cube3();
@@ -35,5 +37,6 @@ public:
 };
 
 // Solver-algorithms
-void IterativeDeepening(Cube3 position, short int depth, short int solveState, std::vector<std::vector<short int>>& moves, const std::vector<std::vector<short int>>& possibleMoves);
-Cube3 Treesearch(Cube3 position, short int maxDepth, short int depth, short int solveState, std::vector<std::vector<short int>>& moves, const std::vector<std::vector<short int>>& possibleMoves);
+Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves);
+Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves);
+Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves);

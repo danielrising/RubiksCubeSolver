@@ -95,7 +95,7 @@ void Cube3::Move(const unsigned char& mov)
 
 }
 
-void Cube3::GenerateMatrix()
+std::vector<char> Cube3::GenerateMatrix()
 {
 	// Priorities in ordering (Clockwise rotations after first)
 	// Observe that these are tied to the orientation convention used for cornerOrient.
@@ -109,7 +109,7 @@ void Cube3::GenerateMatrix()
 		{'Y', 'O', 'B'},
 		{'Y', 'B', 'R'},
 		{'Y', 'G', 'O'},
-		{'Y', 'R', 'G'},
+		{'Y', 'R', 'G'}
 	};
 
 	// Priorities in ordering
@@ -130,7 +130,7 @@ void Cube3::GenerateMatrix()
 		{'Y', 'B'},
 		{'Y', 'O'},
 		{'Y', 'R'},
-		{'Y', 'G'},
+		{'Y', 'G'}
 	};
 
 	// Sides from cube3::faces has colors;
@@ -163,27 +163,47 @@ void Cube3::GenerateMatrix()
 		{{5, 7}, {4, 1}},
 		{{5, 3}, {1, 3}},
 		{{5, 5}, {3, 5}},
-		{{5, 1}, {2, 7}},
+		{{5, 1}, {2, 7}}
 	};
+
+	std::vector<char> generatedMatrix;
+	generatedMatrix.resize(FACES * FACELET_PER_FACE);
 
 	// Generate corner pieces
 	for (int i = 0; i < C_SIZE; i++) {
-		for (int j = 0; j < 3; j++) {
-			generatedMatrix[cornerFaceletCoords[i][j][0]][cornerFaceletCoords[i][j][1]] = cornerColors[c[i].GetId()][(c[i].GetR() + j) % 3];
+		for (int j = 0; j < FACELET_PER_CORNER; j++) {
+			// Index calculations.
+			char faceIndex = cornerFaceletCoords[i][j][0];
+			char faceletIndex = cornerFaceletCoords[i][j][1];
+			char matrixIndex = faceIndex * FACELET_PER_FACE + faceletIndex;
+
+			generatedMatrix[matrixIndex] = cornerColors[c[i].GetId()][(c[i].GetR() + j) % FACELET_PER_CORNER];
 		}
 	}
 
 	// Generate edge pieces
 	for (int i = 0; i < E_SIZE; i++) {
-		for (int j = 0; j < 2; j++) {
-			generatedMatrix[edgeFaceletCoords[i][j][0]][edgeFaceletCoords[i][j][1]] = edgeColors[e[i].GetId()][(e[i].GetR() + j) % 2];
+		for (int j = 0; j < FACELET_PER_EDGE; j++) {
+			// Index calculations.
+			char faceIndex = edgeFaceletCoords[i][j][0];
+			char faceletIndex = edgeFaceletCoords[i][j][1];
+			char matrixIndex = faceIndex * FACELET_PER_FACE + faceletIndex;
+
+			generatedMatrix[matrixIndex] = edgeColors[e[i].GetId()][(e[i].GetR() + j) % FACELET_PER_EDGE];
 		}
 	}
 
 	// Generate middle pieces
 	for (int i = 0; i < FACES; i++) {
-		generatedMatrix[i][4] = faceColors[i];
+		// Index calculations.
+		char faceIndex = i;
+		char faceletIndex = 4; // Middle piece facelet index is 4.
+		char matrixIndex = faceIndex * FACELET_PER_FACE + faceletIndex;
+
+		generatedMatrix[matrixIndex] = faceColors[i];
 	}
+
+	return generatedMatrix;
 }
 
 Cube3::Cube3()
@@ -221,13 +241,13 @@ void Cube3::Scramble(short int amount, int randSeed, bool log)
 
 	for (int i = 0; i < amount; i++) {
 
-		short int move = rand() % FACES; // Random move, 0 to (including) 5
-		short int pow = 1 + rand() % 3; // Random power of that move, 1 to (inluding) 3
+		char move = rand() % FACES; // Random move, 0 to (including) 5
+		char pow = 1 + rand() % 3; // Random power of that move, 1 to (inluding) 3
 
 		Rotate(move, pow);
 
 		if (log) {
-			std::cout << move << "*" << pow << " : ";
+			std::cout << (int)move << "*" << (int)pow << " : ";
 		}
 	}
 	if (log) {
@@ -278,7 +298,7 @@ void Cube3::ConsoleRender()
 	};
 
 	// Update cube state
-	GenerateMatrix();
+	std::vector<char> matrix = GenerateMatrix();
 
 	// Show
 	for (int i = 0; i < 4; i++) {
@@ -289,7 +309,10 @@ void Cube3::ConsoleRender()
 				}
 				else {
 					for (int l = 0; l < 3; l++) {
-						std::cout << generatedMatrix[showLayout[i][k]][j * 3 + l] << " ";
+						char faceIndex = showLayout[i][k];
+						char faceletIndex = j*3 + l;
+						//           matrix[faceIndex]					  [faceletIndex]
+						std::cout << matrix[faceIndex * FACELET_PER_FACE + faceletIndex] << " ";
 					}
 				}
 			}
@@ -317,15 +340,28 @@ void Cube3::ConsolePrint()
 
 /* SOLVER-ALGORITHMS */
 
+// For efficiency reasons, all moves are stored in pairs of two in a single vector. Therefore, a vector stride of 2.
+// {[move], [power], ..., [move], [power]}
+#define MOVE_STRIDE 2
+
+// Implementation of the Kociemba algorithm using IterativeDeepening and Treesearch
+Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves)
+{
+	std::vector<char> groupOne = {
+
+	};
+	return Cube3();
+}
+
 // Calls treesearch with increasing depth, for breadth-first results.
 // Makes sure that the first found solution is the shortest actual solution for that sub-problem.
-void IterativeDeepening(Cube3 position, short int maxDepth, short int solveState, std::vector<std::vector<short int>>& moves, const std::vector<std::vector<short int>>& possibleMoves)
+Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves)
 {
 	// One move each layer of depth, initialize with a number not corresponding to any move.
-	moves.resize(maxDepth);
-	for (int i = 0; i < maxDepth; i++) {
-		std::vector<short int> placeHolder = { -1, -1 };
-		moves[i] = placeHolder;
+	int movesSize = maxDepth * MOVE_STRIDE;
+	moves.resize(movesSize);
+	for (int i = 0; i < maxDepth * MOVE_STRIDE; i++) {
+		moves[i] = -1;
 	}
 
 	// Iterative deepening
@@ -334,15 +370,13 @@ void IterativeDeepening(Cube3 position, short int maxDepth, short int solveState
 		position = Treesearch(position, i, i, solveState, moves, possibleMoves);
 
 		if (position.IsSolved(solveState)) {
-			// position.ConsolePrint();
-			// position.ConsoleRender();
-			break;
+			return position;
 		}
 	}
 }
 
 // Recursive function to be used in combination with Iterative deepening (IDA) - Only tests if solved at last function call (depth = 0)
-Cube3 Treesearch(Cube3 position, short int maxDepth, short int depth, short int solveState, std::vector<std::vector<short int>>& moves, const std::vector<std::vector<short int>>& possibleMoves)
+Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves)
 {
 	// Iterative deepening...
 	if (depth == 0) {
@@ -356,21 +390,26 @@ Cube3 Treesearch(Cube3 position, short int maxDepth, short int depth, short int 
 		}
 
 		// Call each possible move from this position.
-		for (int i = 0; i < possibleMoves.size(); i++) {
-			
+		for (int i = 0; i < possibleMoves.size() - 1; i += MOVE_STRIDE) {
+			int possiblePowIndex = i + 1;
+
 			// Rotate.
-			position.Rotate(possibleMoves[i][0], possibleMoves[i][1]);
-			short int movesIndex = maxDepth - depth;
-			moves[movesIndex] = possibleMoves[i]; // Save rotation in a readable format
+			position.Rotate(possibleMoves[i], possibleMoves[possiblePowIndex]);
+
+			int movesIndex = (maxDepth - depth) * MOVE_STRIDE;
+			int movesPowIndex = movesIndex + 1;
+
+			moves[movesIndex] = possibleMoves[i];
+			moves[movesPowIndex] = possibleMoves[possiblePowIndex];
 
 			// Recursion
 			Cube3 result = Treesearch(position, maxDepth, depth - 1, solveState, moves, possibleMoves);
 
-			if (result.IsSolved(solveState)) { //Solved? break recursion.
+			if (result.IsSolved(solveState)) { // Solved? break recursion.
 				return result;
 			}
 			else { // Undo rotation
-				position.Rotate(possibleMoves[i][0], 4 - possibleMoves[i][1]);
+				position.Rotate(possibleMoves[i], 4 - possibleMoves[possiblePowIndex]);
 			}
 		}
 		return position;

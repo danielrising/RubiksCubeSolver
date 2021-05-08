@@ -40,16 +40,17 @@ int main()
 		}
 
 		else if (input == "solve") {
-			std::vector<std::vector<short int>> possibleMoves = { 
-				{0, 1}, {1, 1}, {2, 1}, {3, 1}, {4, 1}, {5, 1}, 
-				{0, 2}, {1, 2}, {2, 2}, {3, 2}, {4, 2}, {5, 2}, 
-				{0, 3}, {1, 3}, {2, 3}, {3, 3}, {4, 3}, {5, 3} };
+			std::vector<char> possibleMoves = { 
+				0, 1,	1, 1,	2, 1,	3, 1,	4, 1,	5, 1, 
+				0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2, 
+				0, 3,	1, 3,	2, 3,	3, 3,	4, 3,	5, 3 };
 
-			std::vector<std::vector<short int>> solution;
-			IterativeDeepening(cube, 10, 0, solution, possibleMoves);
+			std::vector<char> solution;
+			cube = IterativeDeepening(cube, 10, 0, solution, possibleMoves);
 
-			for (int i = 0; i < solution.size(); i++) {
-				std::cout << solution[i][0] << "*" << solution[i][1] << " - ";
+			for (int i = 0; i < solution.size(); i += 2) {
+				int powIndex = i + 1;
+				std::cout << (int)solution[i] << "*" << (int)solution[powIndex] << " - ";
 			}
 		}
 
