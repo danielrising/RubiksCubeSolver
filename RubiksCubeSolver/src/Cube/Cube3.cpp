@@ -311,8 +311,8 @@ void Cube3::ConsoleRender()
 					for (int l = 0; l < 3; l++) {
 						char faceIndex = showLayout[i][k];
 						char faceletIndex = j*3 + l;
-						//           matrix[faceIndex]					  [faceletIndex]
-						std::cout << matrix[faceIndex * FACELET_PER_FACE + faceletIndex] << " ";
+						char matrixIndex = faceIndex * FACELET_PER_FACE + faceletIndex;
+						std::cout << matrix[matrixIndex] << " ";
 					}
 				}
 			}
