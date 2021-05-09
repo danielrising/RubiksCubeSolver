@@ -36,9 +36,17 @@ public:
 	bool IsSolved(short int solveState);
 	void ConsoleRender();
 	void ConsolePrint();
+
+	// Pruning-table numbers
+	int getPermutationNumberCorner();
+	int getOrientationNumberCorner();
+	int getPermutationNumberEdge(bool firstHalf);
+	int getOrientationNumberEdge(bool firstHalf);
 };
 
 // Solver-algorithms
 Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves);
 Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves);
 Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves);
+
+// Pruning tables

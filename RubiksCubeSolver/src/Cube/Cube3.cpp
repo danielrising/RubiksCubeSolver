@@ -360,6 +360,28 @@ void Cube3::ConsolePrint()
 	}
 }
 
+int Cube3::getPermutationNumberCorner()
+{
+	for (int i = 0; i < C_SIZE; i++) {
+
+	}
+}
+
+int Cube3::getOrientationNumberCorner()
+{
+	return 0;
+}
+
+int Cube3::getPermutationNumberEdge(bool firstHalf)
+{
+	return 0;
+}
+
+int Cube3::getOrientationNumberEdge(bool firstHalf)
+{
+	return 0;
+}
+
 
 
 /* SOLVER-ALGORITHMS */
