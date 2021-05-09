@@ -2,7 +2,7 @@
 
 #include "Cube3.h"
 
-const unsigned char faces[FACES] = { 'U', 'L', 'F', 'R', 'B', 'D' };
+const char faces[FACES] = { 'U', 'L', 'F', 'R', 'B', 'D' };
 
 const unsigned char edgeMove[FACES][E_PER_FACE] =
 {
@@ -246,8 +246,10 @@ void Cube3::Scramble(short int amount, int randSeed, bool log)
 
 		Rotate(move, pow);
 
+		const char power[3] = { ' ', '2', 39 };
+
 		if (log) {
-			std::cout << (int)move << "*" << (int)pow << " : ";
+			std::cout << faces[move] << power[pow - 1] << " -> ";
 		}
 	}
 	if (log) {
@@ -280,6 +282,24 @@ bool Cube3::IsSolved(short int solveState)
 		}
 		return true;
 	}
+
+	// Orientation solved
+	if (solveState == 1) {
+		for (int i = 0; i < C_SIZE; ++i)
+		{
+			if (c[i].GetR() != 0) {
+				return false;
+			}
+		}
+		for (int i = 0; i < E_SIZE; ++i)
+		{
+			if (e[i].GetR() != 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	std::cout << "Solve state not found!" << std::endl;
 	return false;
 }
@@ -340,19 +360,52 @@ void Cube3::ConsolePrint()
 	}
 }
 
+
+
 /* SOLVER-ALGORITHMS */
 
 // For efficiency reasons, all moves are stored in pairs of two in a single vector. Therefore, a vector stride of 2.
 // {[move], [power], ..., [move], [power]}
-#define MOVE_STRIDE 2
 
 // Implementation of the Kociemba algorithm using IterativeDeepening and Treesearch
 Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves)
 {
-	std::vector<char> groupOne = {
-
+	// Allowed moves in phase 1
+	const std::vector<char> allowedMovesOne = {
+		0, 1,	1, 1,	2, 1,	3, 1,	4, 1,	5, 1,
+		0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
+		0, 3,	1, 3,	2, 3,	3, 3,	4, 3,	5, 3 
 	};
-	return Cube3();
+
+	// Allowed moves in phase 2
+	const std::vector<char> allowedMovesTwo = {
+		0, 1,									5, 1,
+		0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
+		0, 3,									5, 3
+	};
+
+	std::vector<char> movesOne;
+	std::vector<char> movesTwo;
+
+	// Phase 1
+	position = IterativeDeepening(position, 18, 1, movesOne, allowedMovesOne);
+
+	// Phase 2
+	position = IterativeDeepening(position, 12, 0, movesTwo, allowedMovesTwo);
+
+	// Moves conversion.
+	int movesOneLength = movesOne.size();
+	int movesTwoLength = movesTwo.size();
+	int movesLength = movesOneLength + movesTwoLength;
+
+	moves.resize(movesOne.size() + movesTwo.size());
+	for (int i = 0; i < movesLength; i++) {
+		moves[i] = movesOne[i];
+		int movesPhaseTwoIndex = i + movesOneLength;
+		moves[movesPhaseTwoIndex] = movesTwo[i];
+	}
+
+	return position;
 }
 
 // Calls treesearch with increasing depth, for breadth-first results.
@@ -397,11 +450,22 @@ Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std
 		for (int i = 0; i < possibleMoves.size() - 1; i += MOVE_STRIDE) {
 			int possiblePowIndex = i + 1;
 
-			// Rotate.
-			position.Rotate(possibleMoves[i], possibleMoves[possiblePowIndex]);
+			char nextMove = possibleMoves[i];
+			char nextPower = possibleMoves[possiblePowIndex];
 
 			int movesIndex = (maxDepth - depth) * MOVE_STRIDE;
 			int movesPowIndex = movesIndex + 1;
+
+			// Don't repeat moves of same face
+			if (movesIndex > 1) {
+				int previousMovesIndex = movesIndex - MOVE_STRIDE;
+				if (moves[previousMovesIndex] == nextMove) {
+					continue;
+				}
+			}
+
+			// Rotate.
+			position.Rotate(nextMove, nextPower);
 
 			moves[movesIndex] = possibleMoves[i];
 			moves[movesPowIndex] = possibleMoves[possiblePowIndex];

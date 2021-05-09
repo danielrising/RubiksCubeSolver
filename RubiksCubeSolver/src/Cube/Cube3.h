@@ -7,10 +7,12 @@
 #define E_SIZE 12
 #define C_PER_FACE 4
 #define E_PER_FACE 4
+
 #define FACELET_PER_CORNER 3
 #define FACELET_PER_EDGE 2
-
 #define FACELET_PER_FACE (C_PER_FACE + E_PER_FACE + 1)
+
+#define MOVE_STRIDE 2
 
 /*3X3X3 CUBE CLASS*/
 class Cube3
