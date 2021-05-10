@@ -14,6 +14,9 @@
 
 #define MOVE_STRIDE 2
 
+#define PRUNE_FACE_ONE 0
+#define PRUNE_FACE_TWO 1
+
 /*3X3X3 CUBE CLASS*/
 class Cube3
 {
@@ -37,11 +40,18 @@ public:
 	void ConsoleRender();
 	void ConsolePrint();
 
-	// Pruning-table numbers
-	int getPermutationNumberCorner();
-	int getOrientationNumberCorner();
-	int getPermutationNumberEdge(bool firstHalf);
-	int getOrientationNumberEdge(bool firstHalf);
+	// Pruning-table indices
+
+	// These indices represents part of the cubes current configuration.
+	// Using these makes it possible lookup if current position is solvable with remaining depth.
+	// Each unique combination of the subset has to return a unique index.
+
+	int EdgeTwistIndex(); // Edge twist configuration number (0 ... 2048 - 1 or 2^11 )
+	int CornerTwistIndex(); // Corner twist configuration number (0 ... 2187 - 1 or 3^7)
+	int UDSliceCombinationIndex(); // Where are the UD Slice edges (0 ... 495 - 1 or 12 choose 4)
+
+	int CornerPermutationIndex(); // Corner permutation number (0 ... 40 320 - 1 or 8!)
+	int UDEdgePermutationIndex(); // U- or D-face edges permutation number (0 ... 40 320 - 1 or 8!)
 };
 
 // Solver-algorithms
@@ -50,3 +60,5 @@ Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::ve
 Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves);
 
 // Pruning tables
+void generateETT(char maxDepth, std::vector<char>& table);
+Cube3 generateETTRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, const std::vector<char>& possibleMoves);

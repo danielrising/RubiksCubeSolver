@@ -360,29 +360,40 @@ void Cube3::ConsolePrint()
 	}
 }
 
-int Cube3::getPermutationNumberCorner()
+int Cube3::EdgeTwistIndex()
 {
-	for (int i = 0; i < C_SIZE; i++) {
-
+	int index = 0;
+	for (int i = 0; i < E_SIZE - 1; i++) {
+		if (e[i].GetR()) {
+			index |= 1 << i;
+		}
 	}
+	return index;
 }
 
-int Cube3::getOrientationNumberCorner()
+int Cube3::CornerTwistIndex()
+{
+	int index = 0;
+	for (int i = 0; i < C_SIZE - 1; i++) {
+		// Something smart mebe
+	}
+	return 0;
+}
+
+int Cube3::UDSliceCombinationIndex()
 {
 	return 0;
 }
 
-int Cube3::getPermutationNumberEdge(bool firstHalf)
+int Cube3::CornerPermutationIndex()
 {
 	return 0;
 }
 
-int Cube3::getOrientationNumberEdge(bool firstHalf)
+int Cube3::UDEdgePermutationIndex()
 {
 	return 0;
 }
-
-
 
 /* SOLVER-ALGORITHMS */
 
@@ -499,9 +510,67 @@ Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std
 				return result;
 			}
 			else { // Undo rotation
-				position.Rotate(possibleMoves[i], 4 - possibleMoves[possiblePowIndex]);
+				position.Rotate(nextMove, C_PER_FACE - nextPower);
 			}
 		}
 		return position;
 	}
+}
+
+void generateETT(char maxDepth, std::vector<char>& table)
+{
+	table.resize(2048);
+	for (int i = 0; i < 2048; i++) {
+		table[i] = -1;
+	}
+
+	const std::vector<char> allowedMoves = {
+		0, 1,	1, 1,	2, 1,	3, 1,	4, 1,	5, 1,
+		0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
+		0, 3,	1, 3,	2, 3,	3, 3,	4, 3,	5, 3
+	};
+
+	Cube3 cube;
+
+	for (int i = 0; i < maxDepth; i++) {
+		std::cout << "Current depth: " << i << std::endl;
+		generateETTRecursive(cube, 0, i, table, allowedMoves);
+	}
+}
+
+Cube3 generateETTRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, const std::vector<char>& possibleMoves)
+{
+	if (depth >= maxDepth) {
+		return position;
+	}
+
+	int index = position.EdgeTwistIndex();
+	//std::cout << (int)index << std::endl;
+
+	// Already visited and better branch exists
+	if (table[index] != -1 && depth > table[index]) {
+		return position;
+	}
+
+	// Update table with current information
+	if (depth > table[index]) {
+		table[index] = depth;
+	}
+	
+	for (int i = 0; i < possibleMoves.size() - 1; i++) {
+		int possiblePowIndex = i + 1;
+
+		char nextMove = possibleMoves[i];
+		char nextPower = possibleMoves[possiblePowIndex];
+
+		// Move
+		position.Rotate(nextMove, nextPower);
+		
+		// Recursion
+		generateETTRecursive(position, depth + 1, maxDepth, table, possibleMoves);
+
+		// Undo Move
+		position.Rotate(nextMove, C_PER_FACE - nextPower);
+	}
+	return position;
 }
