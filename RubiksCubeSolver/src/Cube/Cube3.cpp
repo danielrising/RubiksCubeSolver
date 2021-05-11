@@ -531,15 +531,26 @@ void generateETT(char maxDepth, std::vector<char>& table)
 	};
 
 	Cube3 cube;
+	std::vector<bool> seenTable;
+	seenTable.resize(2048);
 
 	for (int i = 0; i < maxDepth; i++) {
-		std::cout << "Current depth: " << i << std::endl;
-		generateETTRecursive(cube, 0, i, table, allowedMoves);
+		std::cout << "Current depth: " << i;
+		long int counter = 0;
+
+		for (int i = 0; i < seenTable.size(); i++) {
+			seenTable[i] = false;
+		}
+
+		generateETTRecursive(cube, 0, i, table, seenTable, allowedMoves, counter);
+		std::cout << " with a total Recursion count of " << counter << std::endl;
 	}
 }
 
-Cube3 generateETTRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, const std::vector<char>& possibleMoves)
+Cube3 generateETTRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, std::vector<bool>& seenTable, const std::vector<char>& possibleMoves, long int& counter)
 {
+	++counter;
+
 	if (depth >= maxDepth) {
 		return position;
 	}
@@ -548,16 +559,15 @@ Cube3 generateETTRecursive(Cube3 position, char depth, char maxDepth, std::vecto
 	//std::cout << (int)index << std::endl;
 
 	// Already visited and better branch exists
-	if (table[index] != -1 && depth > table[index]) {
+	if (seenTable[index] && depth >= table[index]) {
 		return position;
 	}
 
 	// Update table with current information
-	if (depth > table[index]) {
-		table[index] = depth;
-	}
-	
-	for (int i = 0; i < possibleMoves.size() - 1; i++) {
+	table[index] = depth;
+	seenTable[index] = true;
+
+	for (int i = 0; i < possibleMoves.size() - 1; i += MOVE_STRIDE) {
 		int possiblePowIndex = i + 1;
 
 		char nextMove = possibleMoves[i];
@@ -567,7 +577,7 @@ Cube3 generateETTRecursive(Cube3 position, char depth, char maxDepth, std::vecto
 		position.Rotate(nextMove, nextPower);
 		
 		// Recursion
-		generateETTRecursive(position, depth + 1, maxDepth, table, possibleMoves);
+		generateETTRecursive(position, depth + 1, maxDepth, table, seenTable, possibleMoves, counter);
 
 		// Undo Move
 		position.Rotate(nextMove, C_PER_FACE - nextPower);

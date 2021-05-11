@@ -61,4 +61,4 @@ Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std
 
 // Pruning tables
 void generateETT(char maxDepth, std::vector<char>& table);
-Cube3 generateETTRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, const std::vector<char>& possibleMoves);
+Cube3 generateETTRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, std::vector<bool>& seenTable, const std::vector<char>& possibleMoves, long int& counter);
