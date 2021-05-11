@@ -60,5 +60,7 @@ Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::ve
 Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves);
 
 // Pruning tables
+void generateCTT(char maxDepth, std::vector<char>& table);
+Cube3 generateCTTRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, std::vector<bool>& seenTable, const std::vector<char>& possibleMoves, long int& counter);
 void generateETT(char maxDepth, std::vector<char>& table);
 Cube3 generateETTRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, std::vector<bool>& seenTable, const std::vector<char>& possibleMoves, long int& counter);

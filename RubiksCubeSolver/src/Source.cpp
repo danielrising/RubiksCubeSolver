@@ -137,7 +137,7 @@ int main()
 			auto start = std::chrono::system_clock::now();
 
 			std::vector<char> table;
-			generateETT(12, table);
+			generateETT(9, table);
 			for (int i = 0; i < table.size(); i++) {
 				std::cout << (int)table[i] << " ";
 			}

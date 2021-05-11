@@ -364,9 +364,8 @@ int Cube3::EdgeTwistIndex()
 {
 	int index = 0;
 	for (int i = 0; i < E_SIZE - 1; i++) {
-		if (e[i].GetR()) {
-			index |= 1 << i;
-		}
+		// index += pow(FACELET_PER_EDGE, i) * e[i].GetR();
+		index |= e[i].GetR() << i;
 	}
 	return index;
 }
@@ -375,9 +374,9 @@ int Cube3::CornerTwistIndex()
 {
 	int index = 0;
 	for (int i = 0; i < C_SIZE - 1; i++) {
-		// Something smart mebe
+		index += pow(FACELET_PER_CORNER, i) * c[i].GetR();
 	}
-	return 0;
+	return index;
 }
 
 int Cube3::UDSliceCombinationIndex()
@@ -517,6 +516,78 @@ Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std
 	}
 }
 
+void generateCTT(char maxDepth, std::vector<char>& table)
+{
+	// Set initial values
+	table.resize(2187, -1);
+	
+	const std::vector<char> allowedMoves = {
+		0, 1,	1, 1,	2, 1,	3, 1,	4, 1,	5, 1,
+		0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
+		0, 3,	1, 3,	2, 3,	3, 3,	4, 3,	5, 3
+	};
+
+	// Initialize relevant data
+	Cube3 cube;
+	std::vector<bool> seenTable;
+	seenTable.resize(2187, false);
+
+	// IDA
+	for (int i = 0; i < maxDepth; i++) {
+		// Debug
+		std::cout << "Depth: " << i;
+		long int counter = 0;
+
+		// Call DFS
+		generateCTTRecursive(cube, 0, i, table, seenTable, allowedMoves, counter);
+
+		// Debug
+		std::cout << " with " << counter << " recursion calls" << std::endl;
+
+		// Reset seentable
+		for (int i = 0; i < seenTable.size(); i++) {
+			seenTable[i] = false;
+		}
+	}
+}
+
+Cube3 generateCTTRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, std::vector<bool>& seenTable, const std::vector<char>& possibleMoves, long int& counter)
+{
+	++counter;
+
+	if (depth >= maxDepth) {
+		return position;
+	}
+
+	int index = position.CornerTwistIndex();
+
+	// Already visited
+	if (seenTable[index] && depth >= table[index]) {
+		return position;
+	}
+
+	// Update table with current information
+	table[index] = depth;
+	seenTable[index] = true;
+
+	for (int i = 0; i < possibleMoves.size() - 1; i += MOVE_STRIDE) {
+		int possiblePowIndex = i + 1;
+
+		char nextMove = possibleMoves[i];
+		char nextPower = possibleMoves[possiblePowIndex];
+
+		// Move
+		position.Rotate(nextMove, nextPower);
+
+		// Recursion
+		generateCTTRecursive(position, depth + 1, maxDepth, table, seenTable, possibleMoves, counter);
+
+		// Undo Move
+		position.Rotate(nextMove, C_PER_FACE - nextPower);
+	}
+	return position;
+}
+
 void generateETT(char maxDepth, std::vector<char>& table)
 {
 	table.resize(2048);
@@ -543,7 +614,7 @@ void generateETT(char maxDepth, std::vector<char>& table)
 		}
 
 		generateETTRecursive(cube, 0, i, table, seenTable, allowedMoves, counter);
-		std::cout << " with a total Recursion count of " << counter << std::endl;
+		std::cout << " with a total recursion count of " << counter << std::endl;
 	}
 }
 
@@ -558,7 +629,7 @@ Cube3 generateETTRecursive(Cube3 position, char depth, char maxDepth, std::vecto
 	int index = position.EdgeTwistIndex();
 	//std::cout << (int)index << std::endl;
 
-	// Already visited and better branch exists
+	// Already visited
 	if (seenTable[index] && depth >= table[index]) {
 		return position;
 	}
