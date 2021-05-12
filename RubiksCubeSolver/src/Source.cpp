@@ -14,7 +14,7 @@ bool isNumber(const std::string& str)
 	return true;
 }
 
-Cube3 solveBruteForce(Cube3 cube)
+Cube3 solveBruteForce(Cube3 cube, std::vector<char> table)
 {
 	// Starting time
 	auto start = std::chrono::system_clock::now();
@@ -26,7 +26,7 @@ Cube3 solveBruteForce(Cube3 cube)
 
 	std::vector<char> solution;
 
-	cube = IterativeDeepening(cube, 10, 0, solution, possibleMoves);
+	cube = IterativeDeepening(cube, 10, 0, solution, possibleMoves, table);
 
 	const char faces[FACES] = { 'U', 'L', 'F', 'R', 'B', 'D' };
 	const char power[3] = { ' ', '2', 39 };
@@ -108,17 +108,19 @@ int main()
 		else if (input == "print" || input == "Print")
 		{
 			cube.ConsoleRender();
-			//cube.ConsolePrint();
+			cube.ConsolePrint();
 		}
 
 		else if (input == "scramble")
 		{
-			cube.Scramble(5, 0, true);
+			cube.Scramble(10, 0, true);
 		}
 
 		else if (input == "solve")
 		{
-			cube = solveBruteForce(cube);
+			std::vector<char> table;
+			generateCTT(8, table);
+			cube = solveBruteForce(cube, table);
 		}
 
 		else if (input == "rotate")
@@ -137,7 +139,7 @@ int main()
 			auto start = std::chrono::system_clock::now();
 
 			std::vector<char> table;
-			generateETT(9, table);
+			generateCTT(8, table);
 			for (int i = 0; i < table.size(); i++) {
 				std::cout << (int)table[i] << " ";
 			}

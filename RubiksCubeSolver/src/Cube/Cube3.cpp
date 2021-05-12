@@ -420,10 +420,10 @@ Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves)
 	std::vector<char> movesTwo;
 
 	// Phase 1
-	position = IterativeDeepening(position, 18, 1, movesOne, allowedMovesOne);
+	//position = IterativeDeepening(position, 18, 1, movesOne, allowedMovesOne);
 
 	// Phase 2
-	position = IterativeDeepening(position, 12, 0, movesTwo, allowedMovesTwo);
+	//position = IterativeDeepening(position, 12, 0, movesTwo, allowedMovesTwo);
 
 	// Moves conversion.
 	int movesOneLength = movesOne.size();
@@ -442,7 +442,7 @@ Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves)
 
 // Calls treesearch with increasing depth, for breadth-first results.
 // Makes sure that the first found solution is the shortest actual solution for that sub-problem.
-Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves)
+Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves, std::vector<char>& pruneTable1)
 {
 	// One move each layer of depth, initialize with a number not corresponding to any move.
 	int movesSize = maxDepth * MOVE_STRIDE;
@@ -454,7 +454,7 @@ Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::ve
 	// Iterative deepening
 	for (int i = 0; i < maxDepth; i++) {
 		std::cout << "Current depth: " << i << std::endl;
-		position = Treesearch(position, i, i, solveState, moves, possibleMoves);
+		position = Treesearch(position, i, i, solveState, moves, possibleMoves, pruneTable1);
 
 		if (position.IsSolved(solveState)) {
 			return position;
@@ -465,7 +465,7 @@ Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::ve
 }
 
 // Recursive function to be used in combination with Iterative deepening (IDA) - Only tests if solved at last function call (depth = 0)
-Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves)
+Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves, std::vector<char>& pruneTable1)
 {
 	// Iterative deepening...
 	if (depth == 0) {
@@ -474,7 +474,7 @@ Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std
 
 	else {
 		// Prunes - Don't go deeper if we can already know it's unsolvable with remaining depth.
-		if (false && false) {
+		if (pruneTable1[position.EdgeTwistIndex()] > depth) {
 			return position;
 		}
 
@@ -503,7 +503,7 @@ Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std
 			moves[movesPowIndex] = possibleMoves[possiblePowIndex];
 
 			// Recursion
-			Cube3 result = Treesearch(position, maxDepth, depth - 1, solveState, moves, possibleMoves);
+			Cube3 result = Treesearch(position, maxDepth, depth - 1, solveState, moves, possibleMoves, pruneTable1);
 
 			if (result.IsSolved(solveState)) { // Solved? break recursion.
 				return result;

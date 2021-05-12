@@ -56,8 +56,8 @@ public:
 
 // Solver-algorithms
 Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves);
-Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves);
-Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves);
+Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves, std::vector<char>& pruneTable1);
+Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves, std::vector<char>& pruneTable1);
 
 // Pruning tables
 void generateCTT(char maxDepth, std::vector<char>& table);
