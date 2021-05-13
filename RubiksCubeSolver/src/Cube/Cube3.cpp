@@ -379,9 +379,39 @@ int Cube3::CornerTwistIndex()
 	return index;
 }
 
+int Choose(int n, int k)
+{
+	int binCoff = 1; // Binomial Coefficiant
+	for (int i = 2; i <= n; i++) // n!
+	{
+		binCoff *= i;
+	}
+	for (int i = 2; i <= k; i++) // Divide by k!
+	{
+		binCoff /= i;
+	}
+	for (int i = 2; i <= n - k; i++) // Divide by (n - k)!
+	{
+		binCoff /= i;
+	}
+	return binCoff;
+}
+
 int Cube3::UDSliceCombinationIndex()
 {
-	return 0;
+	short int middleEdges[12] = { 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0 };
+
+	int index = 0;
+	short int passedMiddleEdges = -1;
+	for (int i = 0; i < E_SIZE; i++) {
+		if (middleEdges[e[i].GetId()]) {
+			passedMiddleEdges++;
+		}
+		else if (passedMiddleEdges != -1) {
+			index += Choose(i, passedMiddleEdges);
+		}
+	}
+	return index;
 }
 
 int Cube3::CornerPermutationIndex()
@@ -474,7 +504,7 @@ Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std
 
 	else {
 		// Prunes - Don't go deeper if we can already know it's unsolvable with remaining depth.
-		if (pruneTable1[position.EdgeTwistIndex()] > depth) {
+		if (pruneTable1[position.UDSliceCombinationIndex() * 2048 + position.EdgeTwistIndex()] > depth) {
 			return position;
 		}
 
@@ -514,6 +544,154 @@ Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std
 		}
 		return position;
 	}
+}
+
+void generatePruneTableOne(char maxDepth, std::vector<char>& table)
+{
+	// Set initial values
+	table.resize(2217093120, -1);
+
+	const std::vector<char> allowedMoves = {
+		0, 1,	1, 1,	2, 1,	3, 1,	4, 1,	5, 1,
+		0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
+		0, 3,	1, 3,	2, 3,	3, 3,	4, 3,	5, 3
+	};
+
+	// Initialize relevant data
+	Cube3 cube;
+	std::vector<bool> seenTable;
+	seenTable.resize(2217093120, false);
+
+	// IDA
+	for (int i = 0; i < maxDepth; i++) {
+		// Debug
+		std::cout << "Generating phase-one pruningtable - Depth: " << i;
+		long int counter = 0;
+
+		// Call DFS
+		generatePruneTableOneRecursive(cube, 0, i, table, seenTable, allowedMoves, counter);
+
+		// Debug
+		std::cout << " (finished with " << counter << " function calls)" << std::endl;
+
+		// Reset seentable
+		for (long int i = 0; i < seenTable.size(); i++) {
+			seenTable[i] = false;
+		}
+	}
+}
+
+Cube3 generatePruneTableOneRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, std::vector<bool>& seenTable, const std::vector<char>& possibleMoves, long int& counter)
+{
+	++counter;
+
+	if (depth >= maxDepth) {
+		return position;
+	}
+
+	int x = position.UDSliceCombinationIndex(); // 0 ... 494
+	int y = position.EdgeTwistIndex(); // 0 ... 2047
+	int z = position.CornerTwistIndex(); // 0 ... 2186
+	long int index = x*4478976 + y*2187 + z; // 0 ... 495 * 2048 * 2187 = 2'217'093'120
+
+	// Already visited
+	if (seenTable[index] && depth >= table[index]) {
+		return position;
+	}
+
+	// Update table with current information
+	table[index] = depth;
+	seenTable[index] = true;
+
+	for (int i = 0; i < possibleMoves.size() - 1; i += MOVE_STRIDE) {
+		int possiblePowIndex = i + 1;
+
+		char nextMove = possibleMoves[i];
+		char nextPower = possibleMoves[possiblePowIndex];
+
+		// Move
+		position.Rotate(nextMove, nextPower);
+
+		// Recursion
+		generatePruneTableOneRecursive(position, depth + 1, maxDepth, table, seenTable, possibleMoves, counter);
+
+		// Undo Move
+		position.Rotate(nextMove, C_PER_FACE - nextPower);
+	}
+	return position;
+}
+
+/*
+void generateUST(char maxDepth, std::vector<char>& table)
+{
+	// Set initial values
+	table.resize(495, -1);
+
+	const std::vector<char> allowedMoves = {
+		0, 1,	1, 1,	2, 1,	3, 1,	4, 1,	5, 1,
+		0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
+		0, 3,	1, 3,	2, 3,	3, 3,	4, 3,	5, 3
+	};
+
+	// Initialize relevant data
+	Cube3 cube;
+	std::vector<bool> seenTable;
+	seenTable.resize(495, false);
+
+	// IDA
+	for (int i = 0; i < maxDepth; i++) {
+		// Debug
+		std::cout << "UD Slice Combination - Depth: " << i;
+		long int counter = 0;
+
+		// Call DFS
+		generateUSTRecursive(cube, 0, i, table, seenTable, allowedMoves, counter);
+
+		// Debug
+		std::cout << " with " << counter << " function calls" << std::endl;
+
+		// Reset seentable
+		for (int i = 0; i < seenTable.size(); i++) {
+			seenTable[i] = false;
+		}
+	}
+}
+
+Cube3 generateUSTRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, std::vector<bool>& seenTable, const std::vector<char>& possibleMoves, long int& counter)
+{
+	++counter;
+
+	if (depth >= maxDepth) {
+		return position;
+	}
+
+	int index = position.UDSliceCombinationIndex();
+
+	// Already visited
+	if (seenTable[index] && depth >= table[index]) {
+		return position;
+	}
+
+	// Update table with current information
+	table[index] = depth;
+	seenTable[index] = true;
+
+	for (int i = 0; i < possibleMoves.size() - 1; i += MOVE_STRIDE) {
+		int possiblePowIndex = i + 1;
+
+		char nextMove = possibleMoves[i];
+		char nextPower = possibleMoves[possiblePowIndex];
+
+		// Move
+		position.Rotate(nextMove, nextPower);
+
+		// Recursion
+		generateUSTRecursive(position, depth + 1, maxDepth, table, seenTable, possibleMoves, counter);
+
+		// Undo Move
+		position.Rotate(nextMove, C_PER_FACE - nextPower);
+	}
+	return position;
 }
 
 void generateCTT(char maxDepth, std::vector<char>& table)
@@ -655,3 +833,4 @@ Cube3 generateETTRecursive(Cube3 position, char depth, char maxDepth, std::vecto
 	}
 	return position;
 }
+*/
