@@ -52,6 +52,43 @@ const unsigned char cornerOrient[FACES][C_PER_FACE] =
 	{0, 0, 0, 0}	// D
 };
 
+// Allowed moves in phase 1
+const std::vector<char> subGroupOne = {
+	0, 1,	1, 1,	2, 1,	3, 1,	4, 1,	5, 1,
+	0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
+	0, 3,	1, 3,	2, 3,	3, 3,	4, 3,	5, 3
+};
+
+// Allowed moves in phase 2
+const std::vector<char> subGroupTwo = {
+	0, 1,									5, 1,
+	0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
+	0, 3,									5, 3
+};
+
+const size_t UDSliceCombinationIndexMax = 495;
+const size_t EdgeTwistIndexMax = 2048;
+const size_t CornerTwistIndexMax = 2187;
+const size_t tableSize = EdgeTwistIndexMax*CornerTwistIndexMax;
+
+int Choose(int n, int k)
+{
+	int binCoff = 1; // Binomial Coefficiant
+	for (int i = 2; i <= n; i++) // n!
+	{
+		binCoff *= i;
+	}
+	for (int i = 2; i <= k; i++) // Divide by k!
+	{
+		binCoff /= i;
+	}
+	for (int i = 2; i <= n - k; i++) // Divide by (n - k)!
+	{
+		binCoff /= i;
+	}
+	return binCoff;
+}
+
 void Cube3::Orient(const unsigned char& mov)
 {
 	// EDGES
@@ -204,6 +241,77 @@ std::vector<char> Cube3::GenerateMatrix()
 	}
 
 	return generatedMatrix;
+}
+
+int Cube3::EdgeTwistIndex()
+{
+	int index = 0;
+	for (int i = 0; i < E_SIZE - 1; i++) {
+		// index += pow(FACELET_PER_EDGE, i) * e[i].GetR();
+		index |= e[i].GetR() << i;
+	}
+	return index;
+}
+
+int Cube3::CornerTwistIndex()
+{
+	int index = 0;
+	for (int i = 0; i < C_SIZE - 1; i++) {
+		index += pow(FACELET_PER_CORNER, i) * c[i].GetR();
+	}
+	return index;
+}
+
+int Cube3::UDSliceCombinationIndex()
+{
+	short int middleEdges[12] = { 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0 };
+
+	int index = 0;
+	short int passedMiddleEdges = -1;
+	for (int i = 0; i < E_SIZE; i++) {
+		if (middleEdges[e[i].GetId()]) {
+			passedMiddleEdges++;
+		}
+		else if (passedMiddleEdges != -1) {
+			index += Choose(i, passedMiddleEdges);
+		}
+	}
+	return index;
+}
+
+int Cube3::CornerPermutationIndex()
+{
+	return 0;
+}
+
+int Cube3::UDEdgePermutationIndex()
+{
+	return 0;
+}
+
+// 0 - EdgeTwistIndex * CornerTwistIndex
+// 1 - EdgeTwistIndex * UDSliceCombinationIndex
+// 2 - CornerTwistIndex * UDSliceCombinationIndex
+int Cube3::PruneIndex(char indexId)
+{
+
+	switch (indexId) {
+	case 0: {
+		int x = EdgeTwistIndex();
+		int y = CornerTwistIndex();
+		return x*CornerTwistIndexMax + y;
+	}
+	case 1: {
+		int x = EdgeTwistIndex();
+		int y = UDSliceCombinationIndex();
+		return x*UDSliceCombinationIndexMax + y;
+	}
+	case 2: {
+		int x = CornerTwistIndex();
+		int y = UDSliceCombinationIndex();
+		return x*UDSliceCombinationIndexMax + y;
+	}
+	}
 }
 
 Cube3::Cube3()
@@ -360,70 +468,6 @@ void Cube3::ConsolePrint()
 	}
 }
 
-int Cube3::EdgeTwistIndex()
-{
-	int index = 0;
-	for (int i = 0; i < E_SIZE - 1; i++) {
-		// index += pow(FACELET_PER_EDGE, i) * e[i].GetR();
-		index |= e[i].GetR() << i;
-	}
-	return index;
-}
-
-int Cube3::CornerTwistIndex()
-{
-	int index = 0;
-	for (int i = 0; i < C_SIZE - 1; i++) {
-		index += pow(FACELET_PER_CORNER, i) * c[i].GetR();
-	}
-	return index;
-}
-
-int Choose(int n, int k)
-{
-	int binCoff = 1; // Binomial Coefficiant
-	for (int i = 2; i <= n; i++) // n!
-	{
-		binCoff *= i;
-	}
-	for (int i = 2; i <= k; i++) // Divide by k!
-	{
-		binCoff /= i;
-	}
-	for (int i = 2; i <= n - k; i++) // Divide by (n - k)!
-	{
-		binCoff /= i;
-	}
-	return binCoff;
-}
-
-int Cube3::UDSliceCombinationIndex()
-{
-	short int middleEdges[12] = { 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0 };
-
-	int index = 0;
-	short int passedMiddleEdges = -1;
-	for (int i = 0; i < E_SIZE; i++) {
-		if (middleEdges[e[i].GetId()]) {
-			passedMiddleEdges++;
-		}
-		else if (passedMiddleEdges != -1) {
-			index += Choose(i, passedMiddleEdges);
-		}
-	}
-	return index;
-}
-
-int Cube3::CornerPermutationIndex()
-{
-	return 0;
-}
-
-int Cube3::UDEdgePermutationIndex()
-{
-	return 0;
-}
-
 /* SOLVER-ALGORITHMS */
 
 // For efficiency reasons, all moves are stored in pairs of two in a single vector. Therefore, a vector stride of 2.
@@ -432,20 +476,6 @@ int Cube3::UDEdgePermutationIndex()
 // Implementation of the Kociemba algorithm using IterativeDeepening and Treesearch
 Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves)
 {
-	// Allowed moves in phase 1
-	const std::vector<char> allowedMovesOne = {
-		0, 1,	1, 1,	2, 1,	3, 1,	4, 1,	5, 1,
-		0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
-		0, 3,	1, 3,	2, 3,	3, 3,	4, 3,	5, 3 
-	};
-
-	// Allowed moves in phase 2
-	const std::vector<char> allowedMovesTwo = {
-		0, 1,									5, 1,
-		0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
-		0, 3,									5, 3
-	};
-
 	std::vector<char> movesOne;
 	std::vector<char> movesTwo;
 
@@ -504,7 +534,7 @@ Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std
 
 	else {
 		// Prunes - Don't go deeper if we can already know it's unsolvable with remaining depth.
-		if (pruneTable1[position.UDSliceCombinationIndex() * 2048 + position.EdgeTwistIndex()] > depth) {
+		if (false) {
 			return position;
 		}
 
@@ -546,291 +576,89 @@ Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std
 	}
 }
 
-void generatePruneTableOne(char maxDepth, std::vector<char>& table)
-{
-	// Set initial values
-	table.resize(2217093120, -1);
+/* PRUNING-TABLES */
 
-	const std::vector<char> allowedMoves = {
-		0, 1,	1, 1,	2, 1,	3, 1,	4, 1,	5, 1,
-		0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
-		0, 3,	1, 3,	2, 3,	3, 3,	4, 3,	5, 3
-	};
+void generatePruneTable(std::vector<char>& table, size_t tableSize, std::vector<char> possibleMoves, char indexId, std::string name) {
+	// Pruning table initialization
+	table.resize(tableSize, -1);
 
-	// Initialize relevant data
-	Cube3 cube;
-	std::vector<bool> seenTable;
-	seenTable.resize(2217093120, false);
+	// First in first out queues, separate for holding corresponding depth
+	std::queue<Cube3> fifoQueue;
+	std::queue<char> fifoQueueDepth;
+	fifoQueue.push(Cube3());
+	fifoQueueDepth.push(0);
 
-	// IDA
-	for (int i = 0; i < maxDepth; i++) {
-		// Debug
-		std::cout << "Generating phase-one pruningtable - Depth: " << i;
-		long int counter = 0;
+	// Set first table index
+	table[fifoQueue.front().PruneIndex(indexId)] = 0;
 
-		// Call DFS
-		generatePruneTableOneRecursive(cube, 0, i, table, seenTable, allowedMoves, counter);
+	// DEBUG ...
+	long int counter = 0;
+	auto start = std::chrono::system_clock::now(); // Starting time
+	auto sinceLast = std::chrono::system_clock::now();
+	// ... DEBUG
 
-		// Debug
-		std::cout << " (finished with " << counter << " function calls)" << std::endl;
+	while (!(fifoQueue.empty())) {
+		counter++; // DEBUG
 
-		// Reset seentable
-		for (long int i = 0; i < seenTable.size(); i++) {
-			seenTable[i] = false;
-		}
-	}
-}
+		// Grab queued position
+		Cube3 position = fifoQueue.front();
+		char depth = fifoQueueDepth.front();
+		fifoQueue.pop();
+		fifoQueueDepth.pop();
 
-Cube3 generatePruneTableOneRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, std::vector<bool>& seenTable, const std::vector<char>& possibleMoves, long int& counter)
-{
-	++counter;
+		// Test all new position
+		for (int i = 0; i < possibleMoves.size() - 1; i += 2) {
+			// Next move
+			int possiblePowIndex = i + 1;
+			char nextMove = possibleMoves[i];
+			char nextPower = possibleMoves[possiblePowIndex];
+			position.Rotate(nextMove, nextPower);
 
-	if (depth >= maxDepth) {
-		return position;
-	}
+			// Table index
+			if (table[position.PruneIndex(indexId)] == -1) { // Only enqueue new cases
+				fifoQueue.push(position);
+				fifoQueueDepth.push(depth + 1);
+				table[position.PruneIndex(indexId)] = depth + 1;
+			}
 
-	int x = position.UDSliceCombinationIndex(); // 0 ... 494
-	int y = position.EdgeTwistIndex(); // 0 ... 2047
-	int z = position.CornerTwistIndex(); // 0 ... 2186
-	long int index = x*4478976 + y*2187 + z; // 0 ... 495 * 2048 * 2187 = 2'217'093'120
-
-	// Already visited
-	if (seenTable[index] && depth >= table[index]) {
-		return position;
-	}
-
-	// Update table with current information
-	table[index] = depth;
-	seenTable[index] = true;
-
-	for (int i = 0; i < possibleMoves.size() - 1; i += MOVE_STRIDE) {
-		int possiblePowIndex = i + 1;
-
-		char nextMove = possibleMoves[i];
-		char nextPower = possibleMoves[possiblePowIndex];
-
-		// Move
-		position.Rotate(nextMove, nextPower);
-
-		// Recursion
-		generatePruneTableOneRecursive(position, depth + 1, maxDepth, table, seenTable, possibleMoves, counter);
-
-		// Undo Move
-		position.Rotate(nextMove, C_PER_FACE - nextPower);
-	}
-	return position;
-}
-
-/*
-void generateUST(char maxDepth, std::vector<char>& table)
-{
-	// Set initial values
-	table.resize(495, -1);
-
-	const std::vector<char> allowedMoves = {
-		0, 1,	1, 1,	2, 1,	3, 1,	4, 1,	5, 1,
-		0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
-		0, 3,	1, 3,	2, 3,	3, 3,	4, 3,	5, 3
-	};
-
-	// Initialize relevant data
-	Cube3 cube;
-	std::vector<bool> seenTable;
-	seenTable.resize(495, false);
-
-	// IDA
-	for (int i = 0; i < maxDepth; i++) {
-		// Debug
-		std::cout << "UD Slice Combination - Depth: " << i;
-		long int counter = 0;
-
-		// Call DFS
-		generateUSTRecursive(cube, 0, i, table, seenTable, allowedMoves, counter);
-
-		// Debug
-		std::cout << " with " << counter << " function calls" << std::endl;
-
-		// Reset seentable
-		for (int i = 0; i < seenTable.size(); i++) {
-			seenTable[i] = false;
-		}
-	}
-}
-
-Cube3 generateUSTRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, std::vector<bool>& seenTable, const std::vector<char>& possibleMoves, long int& counter)
-{
-	++counter;
-
-	if (depth >= maxDepth) {
-		return position;
-	}
-
-	int index = position.UDSliceCombinationIndex();
-
-	// Already visited
-	if (seenTable[index] && depth >= table[index]) {
-		return position;
-	}
-
-	// Update table with current information
-	table[index] = depth;
-	seenTable[index] = true;
-
-	for (int i = 0; i < possibleMoves.size() - 1; i += MOVE_STRIDE) {
-		int possiblePowIndex = i + 1;
-
-		char nextMove = possibleMoves[i];
-		char nextPower = possibleMoves[possiblePowIndex];
-
-		// Move
-		position.Rotate(nextMove, nextPower);
-
-		// Recursion
-		generateUSTRecursive(position, depth + 1, maxDepth, table, seenTable, possibleMoves, counter);
-
-		// Undo Move
-		position.Rotate(nextMove, C_PER_FACE - nextPower);
-	}
-	return position;
-}
-
-void generateCTT(char maxDepth, std::vector<char>& table)
-{
-	// Set initial values
-	table.resize(2187, -1);
-	
-	const std::vector<char> allowedMoves = {
-		0, 1,	1, 1,	2, 1,	3, 1,	4, 1,	5, 1,
-		0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
-		0, 3,	1, 3,	2, 3,	3, 3,	4, 3,	5, 3
-	};
-
-	// Initialize relevant data
-	Cube3 cube;
-	std::vector<bool> seenTable;
-	seenTable.resize(2187, false);
-
-	// IDA
-	for (int i = 0; i < maxDepth; i++) {
-		// Debug
-		std::cout << "Depth: " << i;
-		long int counter = 0;
-
-		// Call DFS
-		generateCTTRecursive(cube, 0, i, table, seenTable, allowedMoves, counter);
-
-		// Debug
-		std::cout << " with " << counter << " recursion calls" << std::endl;
-
-		// Reset seentable
-		for (int i = 0; i < seenTable.size(); i++) {
-			seenTable[i] = false;
-		}
-	}
-}
-
-Cube3 generateCTTRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, std::vector<bool>& seenTable, const std::vector<char>& possibleMoves, long int& counter)
-{
-	++counter;
-
-	if (depth >= maxDepth) {
-		return position;
-	}
-
-	int index = position.CornerTwistIndex();
-
-	// Already visited
-	if (seenTable[index] && depth >= table[index]) {
-		return position;
-	}
-
-	// Update table with current information
-	table[index] = depth;
-	seenTable[index] = true;
-
-	for (int i = 0; i < possibleMoves.size() - 1; i += MOVE_STRIDE) {
-		int possiblePowIndex = i + 1;
-
-		char nextMove = possibleMoves[i];
-		char nextPower = possibleMoves[possiblePowIndex];
-
-		// Move
-		position.Rotate(nextMove, nextPower);
-
-		// Recursion
-		generateCTTRecursive(position, depth + 1, maxDepth, table, seenTable, possibleMoves, counter);
-
-		// Undo Move
-		position.Rotate(nextMove, C_PER_FACE - nextPower);
-	}
-	return position;
-}
-
-void generateETT(char maxDepth, std::vector<char>& table)
-{
-	table.resize(2048);
-	for (int i = 0; i < 2048; i++) {
-		table[i] = -1;
-	}
-
-	const std::vector<char> allowedMoves = {
-		0, 1,	1, 1,	2, 1,	3, 1,	4, 1,	5, 1,
-		0, 2,	1, 2,	2, 2,	3, 2,	4, 2,	5, 2,
-		0, 3,	1, 3,	2, 3,	3, 3,	4, 3,	5, 3
-	};
-
-	Cube3 cube;
-	std::vector<bool> seenTable;
-	seenTable.resize(2048);
-
-	for (int i = 0; i < maxDepth; i++) {
-		std::cout << "Current depth: " << i;
-		long int counter = 0;
-
-		for (int i = 0; i < seenTable.size(); i++) {
-			seenTable[i] = false;
+			// Undo move
+			position.Rotate(nextMove, C_PER_FACE - nextPower);
 		}
 
-		generateETTRecursive(cube, 0, i, table, seenTable, allowedMoves, counter);
-		std::cout << " with a total recursion count of " << counter << std::endl;
+		// DEBUG ...
+		if (!(fifoQueueDepth.empty()) && fifoQueueDepth.front() != depth) {
+			// Elapsed time
+			auto end = std::chrono::system_clock::now();
+			
+			std::chrono::duration<double> elapsedSeconds = end - start;
+			std::chrono::duration<double> elapsedSecondsSinceLast = end - sinceLast;
+
+			std::cout << "Generated " << name << " up to and including depth " << (int)depth << std::endl <<
+				"With a total of " << counter << " positions queued." << std::endl <<
+				"Time elapsed: " << elapsedSecondsSinceLast.count() << "s (" << elapsedSeconds.count() << "s total)" << std::endl <<
+				std::endl;
+
+			sinceLast = std::chrono::system_clock::now();
+			counter = 0;
+		}
+		// ... DEBUG
 	}
 }
 
-Cube3 generateETTRecursive(Cube3 position, char depth, char maxDepth, std::vector<char>& table, std::vector<bool>& seenTable, const std::vector<char>& possibleMoves, long int& counter)
+// EdgeTwistIndex * CornerTwistIndex
+void tableOne(std::vector<char>& table)
 {
-	++counter;
-
-	if (depth >= maxDepth) {
-		return position;
-	}
-
-	int index = position.EdgeTwistIndex();
-	//std::cout << (int)index << std::endl;
-
-	// Already visited
-	if (seenTable[index] && depth >= table[index]) {
-		return position;
-	}
-
-	// Update table with current information
-	table[index] = depth;
-	seenTable[index] = true;
-
-	for (int i = 0; i < possibleMoves.size() - 1; i += MOVE_STRIDE) {
-		int possiblePowIndex = i + 1;
-
-		char nextMove = possibleMoves[i];
-		char nextPower = possibleMoves[possiblePowIndex];
-
-		// Move
-		position.Rotate(nextMove, nextPower);
-		
-		// Recursion
-		generateETTRecursive(position, depth + 1, maxDepth, table, seenTable, possibleMoves, counter);
-
-		// Undo Move
-		position.Rotate(nextMove, C_PER_FACE - nextPower);
-	}
-	return position;
+	generatePruneTable(table, EdgeTwistIndexMax * CornerTwistIndexMax, subGroupOne, 0, "table one");
 }
-*/
+
+// EdgeTwistIndexMax * UDSliceCombinationIndexMax
+void tableTwo(std::vector<char>& table)
+{
+	generatePruneTable(table, EdgeTwistIndexMax * UDSliceCombinationIndexMax, subGroupOne, 1, "table two");
+}
+
+// CornerTwistIndex * UDSliceCombinationIndexMax
+void tableThree(std::vector<char>& table)
+{
+	generatePruneTable(table, CornerTwistIndexMax * UDSliceCombinationIndexMax, subGroupOne, 2, "table three");
+}

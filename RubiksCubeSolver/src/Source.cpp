@@ -47,53 +47,12 @@ Cube3 solveBruteForce(Cube3 cube, std::vector<char> table)
 	return cube;
 }
 
-void MemTest() {
-	std::cout << "Initializing..." << std::endl;
-	auto start = std::chrono::system_clock::now();
-
-	std::vector<char> testVector;
-	testVector.resize(3 * pow(10, 9), 1);
-
-	auto end = std::chrono::system_clock::now();
-	std::chrono::duration<double> elapsedSeconds = end - start;
-	std::cout << "Elapsed time: " << elapsedSeconds.count() << "s" << std::endl;
-
-	std::cout << "Calculating sum using range based for-loop..." << std::endl;
-	start = std::chrono::system_clock::now();
-
-	long long int sum = 0;
-
-	for (char elem : testVector) {
-		sum += elem;
-	}
-
-	end = std::chrono::system_clock::now();
-	elapsedSeconds = end - start;
-	std::cout << "Elapsed time: " << elapsedSeconds.count() << "s" << std::endl;
-
-	std::cout << sum << std::endl;
-
-	// For loop
-	std::cout << "Calculating sum using regular for-loop..." << std::endl;
-	start = std::chrono::system_clock::now();
-
-	sum = 0;
-
-	for (long long int i = 0; i < testVector.size(); ++i) {
-		sum += testVector[i];
-	}
-
-	end = std::chrono::system_clock::now();
-	elapsedSeconds = end - start;
-	std::cout << "Elapsed time: " << elapsedSeconds.count() << "s" << std::endl;
-
-	std::cout << sum << std::endl;
-}
-
 int main()
 {
 	Cube3 cube;
 	std::vector<char> table1;
+	std::vector<char> table2;
+	std::vector<char> table3;
 
 	bool shouldClose = false;
 	while (!shouldClose)
@@ -129,59 +88,43 @@ int main()
 			if (isNumber(move) && isNumber(power))
 			{
 				cube.Rotate(stoi(move), stoi(power));
-				std::cout << cube.UDSliceCombinationIndex() << std::endl;
 			}
 		}
 
-		else if (input == "tabletest") {
-			// Starting time
-			auto start = std::chrono::system_clock::now();
+		else if (input == "generatetables") {
+			tableOne(table1);
 
-			generatePruneTableOne(4, table1);
-
-			// Elapsed time
-			auto end = std::chrono::system_clock::now();
-			std::chrono::duration<double> elapsedSeconds = end - start;
-			std::cout << "Elapsed time (Generation): " << elapsedSeconds.count() << "s" << std::endl;
-
-			// Starting time
-			start = std::chrono::system_clock::now();
-
-			std::ofstream fOut("PruningTest.PRUNE");
+			std::ofstream fOut("table-one.PRUNE");
 			for (long int i = 0; i < table1.size(); i++) {
 				fOut << (int)table1[i];
 			}
 			fOut.close();
 
-			// Elapsed time
-			end = std::chrono::system_clock::now();
-			elapsedSeconds = end - start;
-			std::cout << "Elapsed time (File output): " << elapsedSeconds.count() << "s" << std::endl;
-		}
+			std::cout << std::endl;
 
-		else if (input == "memtest")
-		{	
-			std::vector<char> mem(3000000000, 2);
-			auto start = std::chrono::system_clock::now();
+			tableTwo(table2);
 
-			int sum = 0;
-			srand(1234);
-			for (int i = 0; i < 1000000; i++) {
-				int random = rand() % 3000000000;
-				sum += mem[random];
+			fOut.open("table-two.PRUNE");
+			for (long int i = 0; i < table2.size(); i++) {
+				fOut << (int)table2[i];
 			}
-			std::cout << sum;
+			fOut.close();
 
-			// Elapsed time
-			auto end = std::chrono::system_clock::now();
-			std::chrono::duration<double> elapsedSeconds = end - start;
-			std::cout << "Elapsed time: " << elapsedSeconds.count() << "s" << std::endl;
+			std::cout << std::endl;
 
-			//MemTest();
+			tableThree(table3);
+
+			fOut.open("table-three.PRUNE");
+			for (long int i = 0; i < table3.size(); i++) {
+				fOut << (int)table3[i];
+			}
+			fOut.close();
+
+			std::cout << "FINISHED GENERATING TABLES" << std::endl;
 		}
 
-		else if (input == "test") {
-			std::cout << Choose(12, 4) << std::endl;
+		else if (input == "readtables") {
+			// Do something smart here
 		}
 	}
 }
