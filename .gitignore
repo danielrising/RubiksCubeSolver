@@ -3,5 +3,8 @@ RubiksCubeSolver.sln
 RubiksCubeSolver/RubiksCubeSolver.vcxproj
 RubiksCubeSolver/RubiksCubeSolver.vcxproj.filters
 RubiksCubeSolver/RubiksCubeSolver.vcxproj.user
+RubiksCubeSolver/table-one.PRUNE
+RubiksCubeSolver/table-two.PRUNE
+RubiksCubeSolver/table-three.PRUNE
 bin-int
 bin
