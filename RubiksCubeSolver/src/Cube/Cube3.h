@@ -58,13 +58,16 @@ public:
 	void ConsolePrint();
 };
 
+// Move
+
 // Solver-algorithms
 Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves);
 Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves, std::vector<char>& pruneTable1);
 Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves, std::vector<char>& pruneTable1);
 
 // Pruning-tables
-void generatePruneTable(std::vector<char>& table, size_t tableSize, std::vector<char> possibleMoves, char indexId, std::string name);
-void tableOne(std::vector<char>& table);
-void tableTwo(std::vector<char>& table);
-void tableThree(std::vector<char>& table);
+void GeneratePruneTable(std::vector<char>& table, size_t tableSize, std::vector<char> possibleMoves, char indexId, std::string name);
+
+void TableOne(std::vector<char>& table);
+void TableTwo(std::vector<char>& table);
+void TableThree(std::vector<char>& table);

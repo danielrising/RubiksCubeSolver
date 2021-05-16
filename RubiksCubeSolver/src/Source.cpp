@@ -2,7 +2,7 @@
 
 #include "Cube\Cube3.h"
 
-bool isNumber(const std::string& str)
+bool IsNumber(const std::string& str)
 {
 	for (int i = 0; i < str.length(); ++i)
 	{
@@ -14,7 +14,25 @@ bool isNumber(const std::string& str)
 	return true;
 }
 
-Cube3 solveBruteForce(Cube3 cube, std::vector<char> table)
+void WriteToFile(std::vector<char>& table, std::string fileName) {
+	std::ofstream fOut(fileName);
+	for (long int i = 0; i < table.size(); i++) {
+		fOut << (int)table[i];
+	}
+	fOut.close();
+}
+
+void ReadFromFile(std::vector<char>& table, std::string fileName) {
+	std::ifstream fIn(fileName);
+	char c;
+	while (fIn.get(c)) {
+		table.push_back(c);
+	}
+
+	std::cout << "Finished reading " << fileName << std::endl;
+}
+
+Cube3 SolveBruteForce(Cube3 cube, std::vector<char> table)
 {
 	// Starting time
 	auto start = std::chrono::system_clock::now();
@@ -50,9 +68,9 @@ Cube3 solveBruteForce(Cube3 cube, std::vector<char> table)
 int main()
 {
 	Cube3 cube;
-	std::vector<char> table1;
-	std::vector<char> table2;
-	std::vector<char> table3;
+	std::vector<char> tableOne;
+	std::vector<char> tableTwo;
+	std::vector<char> tableThree;
 
 	bool shouldClose = false;
 	while (!shouldClose)
@@ -78,53 +96,34 @@ int main()
 
 		else if (input == "solve")
 		{
-			cube = solveBruteForce(cube, table1);
+			// cube = SolveBruteForce(cube, tableOne);
 		}
 
 		else if (input == "rotate")
 		{
 			std::string move, power;
 			std::cin >> move >> power;
-			if (isNumber(move) && isNumber(power))
+			if (IsNumber(move) && IsNumber(power))
 			{
 				cube.Rotate(stoi(move), stoi(power));
 			}
 		}
 
 		else if (input == "generatetables") {
-			tableOne(table1);
+			TableOne(tableOne);
+			WriteToFile(tableOne, "table-one.prun");
 
-			std::ofstream fOut("table-one.PRUNE");
-			for (long int i = 0; i < table1.size(); i++) {
-				fOut << (int)table1[i];
-			}
-			fOut.close();
+			TableTwo(tableTwo);
+			WriteToFile(tableOne, "table-two.prun");
 
-			std::cout << std::endl;
-
-			tableTwo(table2);
-
-			fOut.open("table-two.PRUNE");
-			for (long int i = 0; i < table2.size(); i++) {
-				fOut << (int)table2[i];
-			}
-			fOut.close();
-
-			std::cout << std::endl;
-
-			tableThree(table3);
-
-			fOut.open("table-three.PRUNE");
-			for (long int i = 0; i < table3.size(); i++) {
-				fOut << (int)table3[i];
-			}
-			fOut.close();
-
-			std::cout << "FINISHED GENERATING TABLES" << std::endl;
+			TableThree(tableThree);
+			WriteToFile(tableThree, "table-three.prun");
 		}
 
 		else if (input == "readtables") {
-			// Do something smart here
+			ReadFromFile(tableOne, "table-one.prun");
+			ReadFromFile(tableTwo, "table-two.prun");
+			ReadFromFile(tableThree, "table-three.prun");
 		}
 	}
 }

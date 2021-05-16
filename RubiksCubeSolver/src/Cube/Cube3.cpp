@@ -578,7 +578,7 @@ Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std
 
 /* PRUNING-TABLES */
 
-void generatePruneTable(std::vector<char>& table, size_t tableSize, std::vector<char> possibleMoves, char indexId, std::string name) {
+void GeneratePruneTable(std::vector<char>& table, size_t tableSize, std::vector<char> possibleMoves, char indexId, std::string name) {
 	// Pruning table initialization
 	table.resize(tableSize, -1);
 
@@ -641,24 +641,25 @@ void generatePruneTable(std::vector<char>& table, size_t tableSize, std::vector<
 			sinceLast = std::chrono::system_clock::now();
 			counter = 0;
 		}
-		// ... DEBUG
 	}
+	std::cout << "FINISHED TABLE." << std::endl << std::endl;
+	// ... DEBUG
 }
 
 // EdgeTwistIndex * CornerTwistIndex
-void tableOne(std::vector<char>& table)
+void TableOne(std::vector<char>& table)
 {
-	generatePruneTable(table, EdgeTwistIndexMax * CornerTwistIndexMax, subGroupOne, 0, "table one");
+	GeneratePruneTable(table, EdgeTwistIndexMax * CornerTwistIndexMax, subGroupOne, 0, "table one");
 }
 
 // EdgeTwistIndexMax * UDSliceCombinationIndexMax
-void tableTwo(std::vector<char>& table)
+void TableTwo(std::vector<char>& table)
 {
-	generatePruneTable(table, EdgeTwistIndexMax * UDSliceCombinationIndexMax, subGroupOne, 1, "table two");
+	GeneratePruneTable(table, EdgeTwistIndexMax * UDSliceCombinationIndexMax, subGroupOne, 1, "table two");
 }
 
 // CornerTwistIndex * UDSliceCombinationIndexMax
-void tableThree(std::vector<char>& table)
+void TableThree(std::vector<char>& table)
 {
-	generatePruneTable(table, CornerTwistIndexMax * UDSliceCombinationIndexMax, subGroupOne, 2, "table three");
+	GeneratePruneTable(table, CornerTwistIndexMax * UDSliceCombinationIndexMax, subGroupOne, 2, "table three");
 }
