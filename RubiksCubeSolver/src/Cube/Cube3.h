@@ -14,8 +14,9 @@
 
 #define MOVE_STRIDE 2
 
-#define PRUNE_FACE_ONE 0
-#define PRUNE_FACE_TWO 1
+#define PRUNE_EDGECORNERTWIST 0
+#define PRUNE_EDGETWIST_UDCOMB 1
+#define PRUNE_CORNERTWIST_UDCOMB 2
 
 // n choose k
 int Choose(int n, int k);
@@ -61,9 +62,9 @@ public:
 // Move
 
 // Solver-algorithms
-Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves);
-Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves, std::vector<char>& pruneTable1);
-Cube3 Treesearch(Cube3 position, char maxDepth, char depth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves, std::vector<char>& pruneTable1);
+Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves, const std::vector<char>& indexIdsOne, const std::vector<std::vector<char>*>& pruneTablesOne, const std::vector<char>& indexIdsTwo, const std::vector<std::vector<char>*>& pruneTablesTwo);
+Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves, const std::vector<char>& indexIds, const std::vector<std::vector<char>*>& pruneTables);
+Cube3 Treesearch(Cube3 position, char maxDepth, char treeMaxDepth, char depth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves, const std::vector<char>& indexIds, const std::vector<std::vector<char>*>& pruneTables);
 
 // Pruning-tables
 void GeneratePruneTable(std::vector<char>& table, size_t tableSize, std::vector<char> possibleMoves, char indexId, std::string name);
