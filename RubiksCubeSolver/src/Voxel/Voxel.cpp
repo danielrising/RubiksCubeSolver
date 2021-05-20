@@ -2,28 +2,27 @@
 
 #include "Voxel.h"
 
-void Voxel::SetId(const unsigned char& newId)
+Voxel::Voxel()
 {
-	_id = newId;
+	voxel = 0;
 }
 
-void Voxel::SetR(const unsigned char& newR)
+void Voxel::SetId(uint8_t newId)
 {
-	_r = newR;
+	voxel = (newId << 4) | GetR();
 }
 
-const unsigned char& Voxel::GetId()
+void Voxel::SetR(uint8_t newR)
 {
-	return _id;
+	voxel = (GetId() << 4) | newR;
 }
 
-const unsigned char& Voxel::GetR()
+uint8_t Voxel::GetId()
 {
-	return _r;
+	return voxel >> 4;
 }
 
-
-std::string Voxel::ToString() const
+uint8_t Voxel::GetR()
 {
-	return ("[" + std::to_string(_id) + ", " + std::to_string(_r) + "]");
+	return (voxel & 0b00001111);
 }

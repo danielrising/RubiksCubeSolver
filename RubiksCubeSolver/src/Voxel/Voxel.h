@@ -3,14 +3,14 @@
 struct Voxel
 {
 private:
-	unsigned char _id, _r;
+	uint8_t voxel;
 
 public:
-	void SetId(const unsigned char& newId);
-	void SetR(const unsigned char& newId);
+	Voxel();
 
-	const unsigned char& GetId();
-	const unsigned char& GetR();
+	void SetId(uint8_t newId);
+	void SetR(uint8_t newId);
 
-	std::string ToString() const;
+	uint8_t GetId();
+	uint8_t GetR();
 };

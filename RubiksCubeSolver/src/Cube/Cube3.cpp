@@ -66,11 +66,6 @@ const std::vector<char> subGroupTwo = {
 	0, 3,									5, 3
 };
 
-const size_t UDSliceCombinationIndexMax = 495;
-const size_t EdgeTwistIndexMax = 2048;
-const size_t CornerTwistIndexMax = 2187;
-const size_t tableSize = EdgeTwistIndexMax*CornerTwistIndexMax;
-
 int Choose(int n, int k)
 {
 	int binCoff = 1; // Binomial Coefficiant
@@ -87,6 +82,15 @@ int Choose(int n, int k)
 		binCoff /= i;
 	}
 	return binCoff;
+}
+
+int Factorial(int n)
+{
+	int factorial = 1;
+	for (int i = n; i > 1; i--) {
+		factorial *= i;
+	}
+	return factorial;
 }
 
 void Cube3::Orient(const unsigned char& mov)
@@ -281,12 +285,48 @@ int Cube3::UDSliceCombinationIndex()
 
 int Cube3::CornerPermutationIndex()
 {
-	return 0;
+	int index = 0;
+
+	for (int i = 1; i < C_SIZE; i++) {
+		unsigned char id = c[i].GetId();
+		int count = 0;
+
+		for (int j = 0; j < i; j++) {
+			if (c[j].GetId() > id) {
+				count++;
+			}
+		}
+
+		index += count * Factorial(i);
+	}
+
+	return index;
 }
 
 int Cube3::UDEdgePermutationIndex()
 {
-	return 0;
+	int index = 0;
+
+	for (int i = 1; i < E_PER_SLICE * 2; i++) {
+		int plusFourI = 0;
+		if (i > 3) plusFourI = 4; // Skip middle slice
+
+		unsigned char id = e[i + plusFourI].GetId();
+		int count = 0;
+
+		for (int j = 0; j < i; j++) {
+			int plusFourJ = 0;
+			if (j > 3) plusFourJ = 4; // Skip middle slice
+
+			if (e[j + plusFourJ].GetId() > id) {
+				count++;
+			}
+		}
+
+		index += count * Factorial(i);
+	}
+
+	return index;
 }
 
 // 0 - EdgeTwistIndex * CornerTwistIndex
@@ -299,17 +339,36 @@ int Cube3::PruneIndex(char indexId)
 	case PRUNE_EDGECORNERTWIST: {
 		int x = EdgeTwistIndex();
 		int y = CornerTwistIndex();
-		return x*CornerTwistIndexMax + y;
+		return x * CORNER_TWIST_INDEX_SIZE + y;
 	}
 	case PRUNE_EDGETWIST_UDCOMB: {
 		int x = EdgeTwistIndex();
 		int y = UDSliceCombinationIndex();
-		return x*UDSliceCombinationIndexMax + y;
+		return x * UDSLICE_COMBINATION_INDEX_SIZE + y;
 	}
 	case PRUNE_CORNERTWIST_UDCOMB: {
 		int x = CornerTwistIndex();
 		int y = UDSliceCombinationIndex();
-		return x*UDSliceCombinationIndexMax + y;
+		return x * UDSLICE_COMBINATION_INDEX_SIZE + y;
+	}
+	case PRUNE_CORNERPERM: {
+		int x = CornerPermutationIndex();
+		return x;
+	}
+	case PRUNE_EDGEPERM: {
+		int x = UDEdgePermutationIndex();
+		return x;
+	}
+	case PRUNE_PHASETWO: {
+		int x = CornerPermutationIndex();
+		int y = UDEdgePermutationIndex();
+		return x * UDEDGE_PERM_INDEX_SIZE + y;
+	}
+	case PRUNE_PHASEONE: {
+		int x = EdgeTwistIndex();
+		int y = CornerTwistIndex();
+		int z = UDSliceCombinationIndex();
+		return x * CORNER_TWIST_INDEX_SIZE * UDSLICE_COMBINATION_INDEX_SIZE + y * UDSLICE_COMBINATION_INDEX_SIZE + z;
 	}
 	}
 }
@@ -462,14 +521,14 @@ void Cube3::ConsolePrint()
  
 	for (int i = 0; i < C_SIZE; ++i)
 	{
-		std::cout << c[i].ToString() << std::endl;
+		std::cout << "[" << (int)c[i].GetId() << ", " << (int)c[i].GetR() << "]" << std::endl;
 	}
 
 	std::cout << "Edges:" << std::endl;
 
 	for (int i = 0; i < E_SIZE; ++i)
 	{
-		std::cout << e[i].ToString() << std::endl;
+		std::cout << "[" << (int)e[i].GetId() << ", " << (int)e[i].GetR() << "]" << std::endl;
 	}
 }
 
@@ -485,23 +544,26 @@ Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves, const std::vec
 	std::vector<char> movesTwo;
 
 	// Phase 1
-	position = IterativeDeepening(position, 12, 1, moves, subGroupOne, indexIdsOne, pruneTablesOne);
-	/*
+	position = IterativeDeepening(position, 12, 1, movesOne, subGroupOne, indexIdsOne, pruneTablesOne);
+	
 	// Phase 2
 	position = IterativeDeepening(position, 18, 0, movesTwo, subGroupTwo, indexIdsTwo, pruneTablesTwo);
+	
 	
 	// Moves conversion.
 	int movesOneLength = movesOne.size();
 	int movesTwoLength = movesTwo.size();
 	int movesLength = movesOneLength + movesTwoLength;
 	
-	moves.resize(movesOne.size() + movesTwo.size());
-	for (int i = 0; i < movesLength; i++) {
+	moves.resize(movesLength);
+	for (int i = 0; i < movesOneLength; i++) {
 		moves[i] = movesOne[i];
+	}
+	for (int i = 0; i < movesTwoLength; i++) {
 		int movesPhaseTwoIndex = i + movesOneLength;
 		moves[movesPhaseTwoIndex] = movesTwo[i];
 	}
-	*/
+	
 	return position;
 }
 
@@ -662,17 +724,40 @@ void GeneratePruneTable(std::vector<char>& table, size_t tableSize, std::vector<
 // EdgeTwistIndex * CornerTwistIndex
 void TableOne(std::vector<char>& table)
 {
-	GeneratePruneTable(table, EdgeTwistIndexMax * CornerTwistIndexMax, subGroupOne, 0, "table one");
+	GeneratePruneTable(table, EDGE_TWIST_INDEX_SIZE * CORNER_TWIST_INDEX_SIZE, subGroupOne, 0, "table one");
 }
 
 // EdgeTwistIndexMax * UDSliceCombinationIndexMax
 void TableTwo(std::vector<char>& table)
 {
-	GeneratePruneTable(table, EdgeTwistIndexMax * UDSliceCombinationIndexMax, subGroupOne, 1, "table two");
+	GeneratePruneTable(table, EDGE_TWIST_INDEX_SIZE * UDSLICE_COMBINATION_INDEX_SIZE, subGroupOne, 1, "table two");
 }
 
 // CornerTwistIndex * UDSliceCombinationIndexMax
 void TableThree(std::vector<char>& table)
 {
-	GeneratePruneTable(table, CornerTwistIndexMax * UDSliceCombinationIndexMax, subGroupOne, 2, "table three");
+	GeneratePruneTable(table, CORNER_TWIST_INDEX_SIZE * UDSLICE_COMBINATION_INDEX_SIZE, subGroupOne, 2, "table three");
+}
+
+// CornerPermIndex
+void TableFour(std::vector<char>& table)
+{
+	GeneratePruneTable(table, CORNER_PERM_INDEX_SIZE, subGroupTwo, 3, "table four");
+}
+
+// UDEdgePermIndex
+void TableFive(std::vector<char>& table)
+{
+	GeneratePruneTable(table, UDEDGE_PERM_INDEX_SIZE, subGroupTwo, 4, "table five");
+}
+
+// CornerPermIndex * UDEdgePermIndex
+void TableSix(std::vector<char>& table)
+{
+	GeneratePruneTable(table, CORNER_PERM_INDEX_SIZE * UDEDGE_PERM_INDEX_SIZE, subGroupTwo, 5, "table six");
+}
+
+void TableSeven(std::vector<char>& table)
+{
+	GeneratePruneTable(table, UDSLICE_COMBINATION_INDEX_SIZE * EDGE_TWIST_INDEX_SIZE * CORNER_TWIST_INDEX_SIZE, subGroupOne, 6, "table seven");
 }

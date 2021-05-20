@@ -19,7 +19,7 @@ bool IsNumber(const std::string& str)
 void WriteToFile(std::vector<char>& table, std::string fileName) {
 	std::ofstream fOut(fileName);
 	for (long int i = 0; i < table.size(); i++) {
-		fOut << (int)table[i];
+		fOut << table[i];
 	}
 	fOut.close();
 }
@@ -28,27 +28,43 @@ void ReadFromFile(std::vector<char>& table, std::string fileName) {
 	std::ifstream fIn(fileName);
 	char c;
 	while (fIn.get(c)) {
-		table.push_back(c - 48);
+		table.push_back(c);
 	}
 
 	std::cout << "Finished reading " << fileName << std::endl;
 }
 
-void ReadTables(std::vector<char>& tableOne, std::vector<char>& tableTwo, std::vector<char>& tableThree) {
+void ReadTables(std::vector<char>& tableOne, std::vector<char>& tableTwo, std::vector<char>& tableThree, std::vector<char>& tableFour, std::vector<char>& tableFive, std::vector<char>& tableSix, std::vector<char>& tableSeven) {
 	ReadFromFile(tableOne, "table-one.prun");
 	ReadFromFile(tableTwo, "table-two.prun");
 	ReadFromFile(tableThree, "table-three.prun");
+	ReadFromFile(tableFour, "table-four.prun");
+	ReadFromFile(tableFive, "table-five.prun");
+	ReadFromFile(tableSix, "table-six.prun");
+	ReadFromFile(tableSeven, "table-seven.prun");
 }
 
-void GenerateTables(std::vector<char>& tableOne, std::vector<char>& tableTwo, std::vector<char>& tableThree) {
+void GenerateTables(std::vector<char>& tableOne, std::vector<char>& tableTwo, std::vector<char>& tableThree, std::vector<char>& tableFour, std::vector<char>& tableFive, std::vector<char>& tableSix, std::vector<char>& tableSeven) {
 	TableOne(tableOne);
 	WriteToFile(tableOne, "table-one.prun");
-
+	
 	TableTwo(tableTwo);
 	WriteToFile(tableTwo, "table-two.prun");
 
 	TableThree(tableThree);
 	WriteToFile(tableThree, "table-three.prun");
+	
+	TableFour(tableFour);
+	WriteToFile(tableFour, "table-four.prun");
+
+	TableFive(tableFive);
+	WriteToFile(tableFive, "table-five.prun");
+	
+	TableSix(tableSix);
+	WriteToFile(tableSix, "table-six.prun");
+
+	TableSeven(tableSeven);
+	WriteToFile(tableSeven, "table-seven.prun");
 }
 
 int main()
@@ -57,6 +73,10 @@ int main()
 	std::vector<char> tableOne;
 	std::vector<char> tableTwo;
 	std::vector<char> tableThree;
+	std::vector<char> tableFour;
+	std::vector<char> tableFive;
+	std::vector<char> tableSix;
+	std::vector<char> tableSeven;
 
 	bool shouldClose = false;
 	while (!shouldClose)
@@ -89,19 +109,19 @@ int main()
 			if (tableOne.empty()) { // Already prepared?
 				std::ifstream fileOne("table-one.prun");
 				if (fileOne.good()) { // Already generated?
-					ReadTables(tableOne, tableTwo, tableThree);
+					ReadTables(tableOne, tableTwo, tableThree, tableFour, tableFive, tableSix, tableSeven);
 				}
 				else {
-					GenerateTables(tableOne, tableTwo, tableThree);
+					GenerateTables(tableOne, tableTwo, tableThree, tableFour, tableFive, tableSix, tableSeven);
 				}
 			}
 
 			std::vector<char> solution;
 
-			std::vector<char> indexIdsOne = { PRUNE_EDGECORNERTWIST, PRUNE_EDGETWIST_UDCOMB, PRUNE_CORNERTWIST_UDCOMB };
-			std::vector<std::vector<char>*> pruneTablesOne = {&tableOne, &tableTwo, &tableThree};
-			std::vector<char> indexIdsTwo = {};
-			std::vector<std::vector<char>*> pruneTablesTwo = {};
+			std::vector<char> indexIdsOne = { PRUNE_PHASEONE };
+			std::vector<std::vector<char>*> pruneTablesOne = { &tableSeven };
+			std::vector<char> indexIdsTwo = { PRUNE_PHASETWO };
+			std::vector<std::vector<char>*> pruneTablesTwo = { &tableSix };
 
 			cube = KociembaAlgorithm(cube, solution, indexIdsOne, pruneTablesOne, indexIdsTwo, pruneTablesTwo);
 
@@ -133,11 +153,15 @@ int main()
 		}
 
 		else if (input == "generate" || input == "Generate") {
-			GenerateTables(tableOne, tableTwo, tableThree);
+			GenerateTables(tableOne, tableTwo, tableThree, tableFour, tableFive, tableSix, tableSeven);
 		}
 
 		else if (input == "read" || input == "Read") {
-			ReadTables(tableOne, tableTwo, tableThree);
+			ReadTables(tableOne, tableTwo, tableThree, tableFour, tableFive, tableSix, tableSeven);
+		}
+
+		else if (input == "test" || input == "Test") {
+			// TEST
 		}
 	}
 }

@@ -2,24 +2,40 @@
 
 #include "Voxel/Voxel.h"
 
+// 3x3x3-Cube constants
 #define FACES 6
 #define C_SIZE 8
 #define E_SIZE 12
 #define C_PER_FACE 4
 #define E_PER_FACE 4
-
+#define E_PER_SLICE 4
 #define FACELET_PER_CORNER 3
 #define FACELET_PER_EDGE 2
 #define FACELET_PER_FACE (C_PER_FACE + E_PER_FACE + 1)
 
+// Datastructure constants (strides)
 #define MOVE_STRIDE 2
 
+// Pruning table switch
 #define PRUNE_EDGECORNERTWIST 0
 #define PRUNE_EDGETWIST_UDCOMB 1
 #define PRUNE_CORNERTWIST_UDCOMB 2
+#define PRUNE_CORNERPERM 3
+#define PRUNE_EDGEPERM 4
+#define PRUNE_PHASETWO 5
+#define PRUNE_PHASEONE 6
+
+// Pruning index max sizes
+#define UDSLICE_COMBINATION_INDEX_SIZE Choose(E_SIZE, E_PER_SLICE)
+#define EDGE_TWIST_INDEX_SIZE pow(FACELET_PER_EDGE, E_SIZE - 1)
+#define CORNER_TWIST_INDEX_SIZE pow(FACELET_PER_CORNER, C_SIZE - 1)
+#define CORNER_PERM_INDEX_SIZE Factorial(C_SIZE)
+#define UDEDGE_PERM_INDEX_SIZE Factorial(E_SIZE - E_PER_SLICE)
 
 // n choose k
 int Choose(int n, int k);
+// ! (faculty/factorial)
+int Factorial(int n);
 
 /*3X3X3 CUBE CLASS*/
 class Cube3
@@ -72,3 +88,7 @@ void GeneratePruneTable(std::vector<char>& table, size_t tableSize, std::vector<
 void TableOne(std::vector<char>& table);
 void TableTwo(std::vector<char>& table);
 void TableThree(std::vector<char>& table);
+void TableFour(std::vector<char>& table);
+void TableFive(std::vector<char>& table);
+void TableSix(std::vector<char>& table);
+void TableSeven(std::vector<char>& table);
