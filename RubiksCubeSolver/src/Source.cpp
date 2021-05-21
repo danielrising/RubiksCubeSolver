@@ -35,36 +35,37 @@ void ReadFromFile(std::vector<char>& table, std::string fileName) {
 }
 
 void ReadTables(std::vector<char>& tableOne, std::vector<char>& tableTwo, std::vector<char>& tableThree, std::vector<char>& tableFour, std::vector<char>& tableFive, std::vector<char>& tableSix, std::vector<char>& tableSeven) {
+	tableOne.reserve(EDGE_TWIST_INDEX_SIZE* CORNER_TWIST_INDEX_SIZE);
 	ReadFromFile(tableOne, "table-one.prun");
+	tableTwo.reserve(UDSLICE_COMBINATION_INDEX_SIZE * EDGE_TWIST_INDEX_SIZE);
 	ReadFromFile(tableTwo, "table-two.prun");
+	tableThree.reserve(UDSLICE_COMBINATION_INDEX_SIZE * CORNER_TWIST_INDEX_SIZE);
 	ReadFromFile(tableThree, "table-three.prun");
+	tableFour.reserve(CORNER_PERM_INDEX_SIZE);
 	ReadFromFile(tableFour, "table-four.prun");
+	tableFive.reserve(UDEDGE_PERM_INDEX_SIZE);
 	ReadFromFile(tableFive, "table-five.prun");
+	tableSix.reserve(CORNER_PERM_INDEX_SIZE * UDEDGE_PERM_INDEX_SIZE);
 	ReadFromFile(tableSix, "table-six.prun");
-	ReadFromFile(tableSeven, "table-seven.prun");
+	//ReadFromFile(tableSeven, "table-seven.prun");
 }
 
 void GenerateTables(std::vector<char>& tableOne, std::vector<char>& tableTwo, std::vector<char>& tableThree, std::vector<char>& tableFour, std::vector<char>& tableFive, std::vector<char>& tableSix, std::vector<char>& tableSeven) {
 	TableOne(tableOne);
 	WriteToFile(tableOne, "table-one.prun");
-	
 	TableTwo(tableTwo);
 	WriteToFile(tableTwo, "table-two.prun");
-
 	TableThree(tableThree);
 	WriteToFile(tableThree, "table-three.prun");
-	
 	TableFour(tableFour);
 	WriteToFile(tableFour, "table-four.prun");
-
 	TableFive(tableFive);
 	WriteToFile(tableFive, "table-five.prun");
-	
 	TableSix(tableSix);
 	WriteToFile(tableSix, "table-six.prun");
-
+	/*
 	TableSeven(tableSeven);
-	WriteToFile(tableSeven, "table-seven.prun");
+	WriteToFile(tableSeven, "table-seven.prun");*/
 }
 
 int main()
@@ -91,8 +92,8 @@ int main()
 
 		else if (input == "print" || input == "Print")
 		{
-			// cube.ConsoleRender();
-			cube.ConsolePrint();
+			cube.ConsoleRender();
+			// cube.ConsolePrint();
 		}
 
 		else if (input == "scramble" || input == "Scramble")
@@ -104,7 +105,7 @@ int main()
 		else if (input == "solve" || input == "Solve")
 		{
 			auto start = std::chrono::system_clock::now(); // Starting time
-
+			
 			// Prepare tables
 			if (tableOne.empty()) { // Already prepared?
 				std::ifstream fileOne("table-one.prun");
@@ -116,10 +117,12 @@ int main()
 				}
 			}
 
+			start = std::chrono::system_clock::now(); // Starting time
+
 			std::vector<char> solution;
 
-			std::vector<char> indexIdsOne = { PRUNE_PHASEONE };
-			std::vector<std::vector<char>*> pruneTablesOne = { &tableSeven };
+			std::vector<char> indexIdsOne = { PRUNE_EDGECORNERTWIST, PRUNE_EDGETWIST_UDCOMB, PRUNE_CORNERTWIST_UDCOMB };
+			std::vector<std::vector<char>*> pruneTablesOne = { &tableOne, &tableTwo, &tableThree};
 			std::vector<char> indexIdsTwo = { PRUNE_PHASETWO };
 			std::vector<std::vector<char>*> pruneTablesTwo = { &tableSix };
 
@@ -161,7 +164,9 @@ int main()
 		}
 
 		else if (input == "test" || input == "Test") {
-			// TEST
+			for (int i = 0; i < 10000; i++) {
+				std::cout << (int)tableSix[i] << ", ";
+			}
 		}
 	}
 }

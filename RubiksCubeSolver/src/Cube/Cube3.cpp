@@ -724,40 +724,40 @@ void GeneratePruneTable(std::vector<char>& table, size_t tableSize, std::vector<
 // EdgeTwistIndex * CornerTwistIndex
 void TableOne(std::vector<char>& table)
 {
-	GeneratePruneTable(table, EDGE_TWIST_INDEX_SIZE * CORNER_TWIST_INDEX_SIZE, subGroupOne, 0, "table one");
+	GeneratePruneTable(table, EDGE_TWIST_INDEX_SIZE * CORNER_TWIST_INDEX_SIZE, subGroupOne, PRUNE_EDGECORNERTWIST, "table one");
 }
 
 // EdgeTwistIndexMax * UDSliceCombinationIndexMax
 void TableTwo(std::vector<char>& table)
 {
-	GeneratePruneTable(table, EDGE_TWIST_INDEX_SIZE * UDSLICE_COMBINATION_INDEX_SIZE, subGroupOne, 1, "table two");
+	GeneratePruneTable(table, EDGE_TWIST_INDEX_SIZE * UDSLICE_COMBINATION_INDEX_SIZE, subGroupOne, PRUNE_EDGETWIST_UDCOMB, "table two");
 }
 
 // CornerTwistIndex * UDSliceCombinationIndexMax
 void TableThree(std::vector<char>& table)
 {
-	GeneratePruneTable(table, CORNER_TWIST_INDEX_SIZE * UDSLICE_COMBINATION_INDEX_SIZE, subGroupOne, 2, "table three");
+	GeneratePruneTable(table, CORNER_TWIST_INDEX_SIZE * UDSLICE_COMBINATION_INDEX_SIZE, subGroupOne, PRUNE_CORNERTWIST_UDCOMB, "table three");
 }
 
 // CornerPermIndex
 void TableFour(std::vector<char>& table)
 {
-	GeneratePruneTable(table, CORNER_PERM_INDEX_SIZE, subGroupTwo, 3, "table four");
+	GeneratePruneTable(table, CORNER_PERM_INDEX_SIZE, subGroupTwo, PRUNE_CORNERPERM, "table four");
 }
 
 // UDEdgePermIndex
 void TableFive(std::vector<char>& table)
 {
-	GeneratePruneTable(table, UDEDGE_PERM_INDEX_SIZE, subGroupTwo, 4, "table five");
+	GeneratePruneTable(table, UDEDGE_PERM_INDEX_SIZE, subGroupTwo, PRUNE_EDGEPERM, "table five");
 }
 
 // CornerPermIndex * UDEdgePermIndex
 void TableSix(std::vector<char>& table)
 {
-	GeneratePruneTable(table, CORNER_PERM_INDEX_SIZE * UDEDGE_PERM_INDEX_SIZE, subGroupTwo, 5, "table six");
+	GeneratePruneTable(table, CORNER_PERM_INDEX_SIZE * UDEDGE_PERM_INDEX_SIZE, subGroupTwo, PRUNE_PHASETWO, "table six");
 }
 
 void TableSeven(std::vector<char>& table)
 {
-	GeneratePruneTable(table, UDSLICE_COMBINATION_INDEX_SIZE * EDGE_TWIST_INDEX_SIZE * CORNER_TWIST_INDEX_SIZE, subGroupOne, 6, "table seven");
+	GeneratePruneTable(table, UDSLICE_COMBINATION_INDEX_SIZE * EDGE_TWIST_INDEX_SIZE * CORNER_TWIST_INDEX_SIZE, subGroupOne, PRUNE_PHASEONE, "table seven");
 }
