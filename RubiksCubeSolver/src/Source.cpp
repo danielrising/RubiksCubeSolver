@@ -35,7 +35,7 @@ int main()
 	{
 		std::string input;
 		std::cin >> input;
-		clearConsole();
+		// clearConsole();
 
 		if (input == "stop" || input == "Stop")
 		{
@@ -74,7 +74,8 @@ int main()
 		else if (input == "scramble" || input == "Scramble")
 		{
 			int seed = std::chrono::system_clock::now().time_since_epoch().count();
-			cube.Scramble(25, 0, true);
+			cube.Scramble(25, seed, true);
+			std::cout << std::endl;
 			cube.ConsoleRender();
 		}
 
@@ -98,6 +99,9 @@ int main()
 			cube = KociembaAlgorithm(cube, solution, indexIdsOne, pruneTablesOne, indexIdsTwo, pruneTablesTwo);
 			printFormatted(solution);
 			cube.ConsoleRender();
+		}
+		else if (input == "input" || input == "Input") {
+			cube.setStateFromCin();
 		}
 	}
 }

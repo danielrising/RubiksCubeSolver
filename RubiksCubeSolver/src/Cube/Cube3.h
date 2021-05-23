@@ -61,6 +61,7 @@ public:
 	int PruneIndex(char indexId);
 
 	Cube3();
+	void setStateFromCin();
 
 	// Manipulations
 	void Rotate(const unsigned char &mov, const unsigned char &pow);

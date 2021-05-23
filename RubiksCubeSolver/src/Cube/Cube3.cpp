@@ -376,6 +376,30 @@ Cube3::Cube3()
 	GenerateMatrix();
 }
 
+
+void Cube3::setStateFromCin()
+{
+	for (int i = 0; i < C_SIZE; i++) {
+		std::cout << "Corner at position " << i << " (Id, Rotation): ";
+		int id, r;
+		std::cin >> id >> r;
+		std::cout << std::endl;
+
+		c[i].SetId(id);
+		c[i].SetR(r);
+	}
+
+	for (int i = 0; i < E_SIZE; i++) {
+		std::cout << "Edge at position " << i << " (Id, Rotation): ";
+		int id, r;
+		std::cin >> id >> r;
+		std::cout << std::endl;
+
+		e[i].SetId(id);
+		e[i].SetR(r);
+	}
+}
+
 // mov 0 - 5, pow 1-3
 // mov corresponding to following, (Up, left, front, right, back, down)
 // pow corresponding to following, (Clockwise quarter, half, Counter clockwise quarter)
