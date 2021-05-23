@@ -28,7 +28,7 @@ int main()
 
 	bool shouldClose = false;
 
-	std::cout << "Welcome to Daniel Rising's -Rubik's Cube Solver- 1.0." << std::endl
+	std::cout << "Daniel Rising's -Rubik's Cube Solver- 1.0." << std::endl
 		<< "Type [Help] for program instructions." << std::endl;
 
 	while (!shouldClose)
