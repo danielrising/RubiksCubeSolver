@@ -7,7 +7,7 @@ RubiksCubeSolver/phaseone-EC.prun
 RubiksCubeSolver/phaseone-EUD.prun
 RubiksCubeSolver/phaseone-CUD.prun
 RubiksCubeSolver/phasetwo.prun
-RubiksCubeSolver/benchmark_results.txt
 
 bin-int
 bin
+RubiksCubeSolver/benchmark_results.txt
