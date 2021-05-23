@@ -66,6 +66,13 @@ const std::vector<char> subGroupTwo = {
 	0, 3,									5, 3
 };
 
+void printColored(std::string text, int color) {
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);;
+	SetConsoleTextAttribute(hConsole, color);
+	std::cout << text;
+	SetConsoleTextAttribute(hConsole, CONSOLE_WHITE);
+}
+
 int Choose(int n, int k)
 {
 	int binCoff = 1; // Binomial Coefficiant
@@ -516,7 +523,20 @@ void Cube3::ConsoleRender()
 						char faceIndex = showLayout[i][k];
 						char faceletIndex = j*3 + l;
 						char matrixIndex = faceIndex * FACELET_PER_FACE + faceletIndex;
-						std::cout << matrix[matrixIndex] << " ";
+
+						char color = matrix[matrixIndex];
+						char consoleColor = CONSOLE_WHITE;
+						// 'W', 'O', 'G', 'R', 'B', 'Y'
+						switch (color) {
+						case 'W': consoleColor = CONSOLE_BRIGHT_WHITE; break;
+						case 'O': consoleColor = CONSOLE_YELLOW; break;
+						case 'G': consoleColor = CONSOLE_GREEN; break;
+						case 'R': consoleColor = CONSOLE_RED; break;
+						case 'B': consoleColor = CONSOLE_BLUE; break;
+						case 'Y': consoleColor = CONSOLE_LIGHT_YELLOW; break;
+						}
+
+						printColored("O ", consoleColor);
 					}
 				}
 			}
@@ -553,7 +573,7 @@ Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves, const std::vec
 	// STARTING TIME
 	auto start = std::chrono::system_clock::now();
 	std::cout << "Solving using Kociemba's two phase algorithm." << std::endl
-		<< "IDA Phase one... ";
+		<< "IDA Phase one, depth: ";
 
 	std::vector<char> movesOne;
 	std::vector<char> movesTwo;
@@ -564,15 +584,19 @@ Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves, const std::vec
 	// PHASE ONE TIME
 	auto second = std::chrono::system_clock::now();;
 	std::chrono::duration<double> elapsedSeconds = second - start;
-	std::cout << "Finished in " << elapsedSeconds.count() << "s " << std::endl
-		<< "IDA Phase two... ";
+	std::cout << "Finished in ";
+	printColored(std::to_string(elapsedSeconds.count()), CONSOLE_RED); 
+	std::cout << "s " << std::endl
+		<< "IDA Phase two, depth: ";
 
 	// Phase 2
 	position = IterativeDeepening(position, 18, 0, movesTwo, subGroupTwo, indexIdsTwo, pruneTablesTwo);
 	
 	// PHASE TWO TIME
 	elapsedSeconds = std::chrono::system_clock::now() - second;
-	std::cout << "Finished in " << elapsedSeconds.count() << "s" << std::endl;
+	std::cout << "Finished in ";
+	printColored(std::to_string(elapsedSeconds.count()), CONSOLE_RED);
+	std::cout << "s" << std::endl;
 
 	// Moves conversion.
 	int movesOneLength = movesOne.size();
@@ -590,7 +614,9 @@ Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves, const std::vec
 
 	// CLOSING TIME
 	elapsedSeconds = std::chrono::system_clock::now() - start;
-	std::cout << "Solved in " << elapsedSeconds.count() << "s total." << std::endl << std::endl;
+	std::cout << "Solved in ";
+	printColored(std::to_string(elapsedSeconds.count()), CONSOLE_GREEN);
+	std::cout << "s total." << std::endl << std::endl;
 
 	return position;
 }
@@ -730,7 +756,9 @@ void GeneratePruneTable(std::vector<char>& table, size_t tableSize, std::vector<
 		if (!(fifoQueueDepth.empty()) && fifoQueueDepth.front() != depth) {
 			std::chrono::duration<double> elapsedSecondsSinceLast = std::chrono::system_clock::now() - sinceLast;
 
-			std::cout << (int)depth << " (" << elapsedSecondsSinceLast.count() << "s), ";
+			std::cout << (int)depth << " (";
+			printColored(std::to_string(elapsedSecondsSinceLast.count()), CONSOLE_RED);
+			std::cout << "s), ";
 
 			sinceLast = std::chrono::system_clock::now();
 		}
@@ -738,8 +766,12 @@ void GeneratePruneTable(std::vector<char>& table, size_t tableSize, std::vector<
 
 	std::chrono::duration<double> elapsedSeconds = std::chrono::system_clock::now() - start;
 	std::chrono::duration<double> elapsedSecondsSinceLast = std::chrono::system_clock::now() - sinceLast;
-	std::cout << (int)depth << " (" << elapsedSecondsSinceLast.count() << "s)" << std::endl
-		<< "Finished generation in " << elapsedSeconds.count() << "s total." << std::endl;
+	std::cout << (int)depth << " (";
+	printColored(std::to_string(elapsedSecondsSinceLast.count()), CONSOLE_RED);
+	std::cout << "s)" << std::endl
+		<< "Finished generation in ";
+	printColored(std::to_string(elapsedSeconds.count()), CONSOLE_GREEN);
+	std::cout << "s total." << std::endl;
 }
 
 // EdgeTwistIndex * CornerTwistIndex
@@ -780,7 +812,9 @@ void WriteToFile(std::vector<char>& table, std::string fileName) {
 
 	// CLOSING TIME
 	std::chrono::duration<double> elapsedSeconds = std::chrono::system_clock::now() - start;
-	std::cout << " Finished in " << elapsedSeconds.count() << "s" << std::endl;
+	std::cout << " Finished in ";
+	printColored(std::to_string(elapsedSeconds.count()), CONSOLE_RED);
+	std::cout << "s" << std::endl;
 }
 
 void ReadFromFile(std::vector<char>& table, std::string fileName) {
@@ -797,10 +831,12 @@ void ReadFromFile(std::vector<char>& table, std::string fileName) {
 
 	// CLOSING TIME
 	std::chrono::duration<double> elapsedSeconds = std::chrono::system_clock::now() - start;
-	std::cout << " Finished in " << elapsedSeconds.count() << "s" << std::endl;
+	std::cout << " Finished in ";
+	printColored(std::to_string(elapsedSeconds.count()), CONSOLE_RED);
+	std::cout << "s" << std::endl;
 }
 
-void GenerateTables(std::vector<char>& tablePhaseOneEC, std::vector<char>& tablePhaseOneEUD, std::vector<char>& tablePhaseOneCUD, std::vector<char>& tablePhaseTwo) {
+void GenerateTables(bool log, std::vector<char>& tablePhaseOneEC, std::vector<char>& tablePhaseOneEUD, std::vector<char>& tablePhaseOneCUD, std::vector<char>& tablePhaseTwo) {
 	std::ifstream temp;
 
 	// Phase one
@@ -816,7 +852,7 @@ void GenerateTables(std::vector<char>& tablePhaseOneEC, std::vector<char>& table
 		}
 		temp.close();
 	}
-	else {
+	else if (log) {
 		std::cout << "Skipped phaseone-EC.prun. (Already initialized)" << std::endl;
 	}
 	std::cout << std::endl;
@@ -833,7 +869,7 @@ void GenerateTables(std::vector<char>& tablePhaseOneEC, std::vector<char>& table
 		}
 		temp.close();
 	}
-	else {
+	else if (log) {
 		std::cout << "Skipped phaseone-EUD.prun. (Already initialized)" << std::endl;
 	}
 	std::cout << std::endl;
@@ -850,7 +886,7 @@ void GenerateTables(std::vector<char>& tablePhaseOneEC, std::vector<char>& table
 		}
 		temp.close();
 	}
-	else {
+	else if (log) {
 		std::cout << "Skipped phaseone-CUD.prun. (Already initialized)" << std::endl;
 	}
 	std::cout << std::endl;
@@ -868,7 +904,7 @@ void GenerateTables(std::vector<char>& tablePhaseOneEC, std::vector<char>& table
 		}
 		temp.close();
 	}
-	else {
+	else if (log) {
 		std::cout << "Skipped phasetwo.prun. (Already initialized)" << std::endl;
 	}
 	std::cout << std::endl;

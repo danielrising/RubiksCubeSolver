@@ -29,6 +29,25 @@
 #define PRUNE_CORNERTWIST_UDCOMB 2
 #define PRUNE_PHASETWO 3
 
+// Colored Messages
+#define CONSOLE_BLACK 0
+#define CONSOLE_BLUE 1
+#define CONSOLE_GREEN 2
+#define CONSOLE_AQUA 3
+#define CONSOLE_RED 4
+#define CONSOLE_PURPLE 5
+#define CONSOLE_YELLOW 6
+#define CONSOLE_WHITE 7
+#define CONSOLE_GRAY 8
+#define CONSOLE_LIGHT_BLUE 9
+#define CONSOLE_LIGHT_GREEN 10
+#define CONSOLE_LIGHT_AQUA 11
+#define CONSOLE_LIGHT_RED 12
+#define CONSOLE_LIGHT_PURPLE 13
+#define CONSOLE_LIGHT_YELLOW 14
+#define CONSOLE_BRIGHT_WHITE 15
+void printColored(std::string text, int color);
+
 // n choose k
 int Choose(int n, int k);
 // ! (faculty/factorial)
@@ -88,7 +107,7 @@ void GeneratePhaseTwo(std::vector<char>& table);
 
 void WriteToFile(std::vector<char>& table, std::string fileName);
 void ReadFromFile(std::vector<char>& table, std::string fileName);
-void GenerateTables(std::vector<char>& tablePhaseOneEC, std::vector<char>& tablePhaseOneEUD, std::vector<char>& tablePhaseOneCUD, std::vector<char>& tablePhaseTwo);
+void GenerateTables(bool log, std::vector<char>& tablePhaseOneEC, std::vector<char>& tablePhaseOneEUD, std::vector<char>& tablePhaseOneCUD, std::vector<char>& tablePhaseTwo);
 
 // Format move number
 void printFormatted(std::vector<char>& moves);

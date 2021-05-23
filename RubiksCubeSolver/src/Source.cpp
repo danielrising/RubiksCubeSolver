@@ -18,6 +18,23 @@ void clearConsole() {
 	system("cls");
 }
 
+void consoleColor() {
+	HANDLE hConsole;
+	int k;
+
+	hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	// you can loop k higher to see more color choices
+	for (k = 1; k < 255; k++)
+	{
+		// pick the colorattribute k you want
+		SetConsoleTextAttribute(hConsole, k);
+		std::cout << k << " I want to be nice today!" << std::endl;
+	}
+
+	std::cin.get(); // wait
+}
+
 int main()
 {
 	Cube3 cube;
@@ -35,7 +52,7 @@ int main()
 	{
 		std::string input;
 		std::cin >> input;
-		// clearConsole();
+		clearConsole();
 
 		if (input == "stop" || input == "Stop")
 		{
@@ -50,7 +67,8 @@ int main()
 				<< "[Rotate] x y - Rotate side x (0-Up, 1-Left, 2-Front, 3-Right, 4-Back, 5-Down) with a power of y (1-Quarter Clockwise, 2-Halfturn, 3-Quarter Counter Clockwise)." << std::endl
 				<< "[Scramble] - Applies a 25-move scramble to the cube." << std::endl
 				<< "[Generate] - Generates/Reads/Initalizes pruning tables for solving algorithm." << std::endl
-				<< "[Solve] - (Runs [Generate]) Finds first Kociemba two phase algorithm solution, then applies it to the current cube state." << std::endl;
+				<< "[Solve] - (Runs [Generate]) Finds first Kociemba two phase algorithm solution, then applies it to the current cube state." << std::endl
+				<< "[Benchmark] - Solve 100 individual scrambles after one another, outputs results to benchmark_results.txt" << std::endl;
 		}
 
 		else if (input == "print" || input == "Print")
@@ -74,19 +92,19 @@ int main()
 		else if (input == "scramble" || input == "Scramble")
 		{
 			int seed = std::chrono::system_clock::now().time_since_epoch().count();
-			cube.Scramble(25, seed, true);
+			cube.Scramble(30, seed, true);
 			std::cout << std::endl;
 			cube.ConsoleRender();
 		}
 
 		else if (input == "generate" || input == "Generate") {
-			GenerateTables(tablePhaseOneEC, tablePhaseOneEUD, tablePhaseOneCUD, tablePhaseTwo);
+			GenerateTables(true, tablePhaseOneEC, tablePhaseOneEUD, tablePhaseOneCUD, tablePhaseTwo);
 		}
 
 		else if (input == "solve" || input == "Solve")
 		{			
 			// Prepare tables
-			GenerateTables(tablePhaseOneEC, tablePhaseOneEUD, tablePhaseOneCUD, tablePhaseTwo);
+			GenerateTables(false, tablePhaseOneEC, tablePhaseOneEUD, tablePhaseOneCUD, tablePhaseTwo);
 
 			// Initialize containers
 			std::vector<char> solution;
@@ -102,6 +120,48 @@ int main()
 		}
 		else if (input == "input" || input == "Input") {
 			cube.setStateFromCin();
+		}
+		else if (input == "test" || input == "Test") {
+			consoleColor();
+		}
+		else if (input == "benchmark" || input == "Benchmark") {
+			// Prepare tables
+			GenerateTables(true, tablePhaseOneEC, tablePhaseOneEUD, tablePhaseOneCUD, tablePhaseTwo);
+
+			// Initialize containers
+			std::vector<char> solution;
+			std::vector<char> indexIdsOne = { PRUNE_EDGECORNERTWIST, PRUNE_EDGETWIST_UDCOMB, PRUNE_CORNERTWIST_UDCOMB };
+			std::vector<std::vector<char>*> pruneTablesOne = { &tablePhaseOneEC, &tablePhaseOneEUD, &tablePhaseOneCUD };
+			std::vector<char> indexIdsTwo = { PRUNE_PHASETWO };
+			std::vector<std::vector<char>*> pruneTablesTwo = { &tablePhaseTwo };
+
+			// Open file output
+			std::ofstream results("benchmark_results.txt");
+			results << "[Case] [stdlib.h random seed] [Amount of moves] [Time]" << std::endl;
+
+			// loop test cases
+			for (int i = 0; i < 100; i++) {
+				// Set random seed
+				int seed = std::chrono::system_clock::now().time_since_epoch().count();
+				cube.Scramble(30, seed, false);
+				std::cout << i << ". Random seed: " << seed << std::endl;
+				cube.ConsoleRender();
+
+				auto start = std::chrono::system_clock::now(); // STARTING TIME
+
+				cube = KociembaAlgorithm(cube, solution, indexIdsOne, pruneTablesOne, indexIdsTwo, pruneTablesTwo);
+
+				std::chrono::duration<double> elapsedSeconds = std::chrono::system_clock::now() - start; // CLOSING TIME
+
+				int counter = 0;
+				for (int j = 0; j < solution.size() - 1; j += MOVE_STRIDE) {
+					if (solution[j] != -1) {
+						counter++;
+					}
+				}
+
+				results << i << " " << seed << " " << counter << " " << elapsedSeconds.count() << std::endl;
+			}
 		}
 	}
 }

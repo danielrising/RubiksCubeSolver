@@ -1,0 +1,1 @@
+[Case] [stdlib.h random seed] [Amount of moves] [Time]
