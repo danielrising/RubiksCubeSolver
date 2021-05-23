@@ -2,8 +2,6 @@
 
 #include "Cube\Cube3.h"
 
-const char faces[FACES] = { 'U', 'L', 'F', 'R', 'B', 'D' };
-
 bool IsNumber(const std::string& str)
 {
 	for (int i = 0; i < str.length(); ++i)
@@ -16,133 +14,50 @@ bool IsNumber(const std::string& str)
 	return true;
 }
 
-void WriteToFile(std::vector<char>& table, std::string fileName) {
-	std::ofstream fOut(fileName);
-	for (long int i = 0; i < table.size(); i++) {
-		fOut << table[i];
-	}
-	fOut.close();
-}
-
-void ReadFromFile(std::vector<char>& table, std::string fileName) {
-	std::ifstream fIn(fileName);
-	char c;
-	while (fIn.get(c)) {
-		table.push_back(c);
-	}
-
-	std::cout << "Finished reading " << fileName << std::endl;
-}
-
-void ReadTables(std::vector<char>& tableOne, std::vector<char>& tableTwo, std::vector<char>& tableThree, std::vector<char>& tableFour, std::vector<char>& tableFive, std::vector<char>& tableSix, std::vector<char>& tableSeven) {
-	tableOne.reserve(EDGE_TWIST_INDEX_SIZE* CORNER_TWIST_INDEX_SIZE);
-	ReadFromFile(tableOne, "table-one.prun");
-	tableTwo.reserve(UDSLICE_COMBINATION_INDEX_SIZE * EDGE_TWIST_INDEX_SIZE);
-	ReadFromFile(tableTwo, "table-two.prun");
-	tableThree.reserve(UDSLICE_COMBINATION_INDEX_SIZE * CORNER_TWIST_INDEX_SIZE);
-	ReadFromFile(tableThree, "table-three.prun");
-	tableFour.reserve(CORNER_PERM_INDEX_SIZE);
-	ReadFromFile(tableFour, "table-four.prun");
-	tableFive.reserve(UDEDGE_PERM_INDEX_SIZE);
-	ReadFromFile(tableFive, "table-five.prun");
-	tableSix.reserve(CORNER_PERM_INDEX_SIZE * UDEDGE_PERM_INDEX_SIZE);
-	ReadFromFile(tableSix, "table-six.prun");
-	//ReadFromFile(tableSeven, "table-seven.prun");
-}
-
-void GenerateTables(std::vector<char>& tableOne, std::vector<char>& tableTwo, std::vector<char>& tableThree, std::vector<char>& tableFour, std::vector<char>& tableFive, std::vector<char>& tableSix, std::vector<char>& tableSeven) {
-	TableOne(tableOne);
-	WriteToFile(tableOne, "table-one.prun");
-	TableTwo(tableTwo);
-	WriteToFile(tableTwo, "table-two.prun");
-	TableThree(tableThree);
-	WriteToFile(tableThree, "table-three.prun");
-	TableFour(tableFour);
-	WriteToFile(tableFour, "table-four.prun");
-	TableFive(tableFive);
-	WriteToFile(tableFive, "table-five.prun");
-	TableSix(tableSix);
-	WriteToFile(tableSix, "table-six.prun");
-	/*
-	TableSeven(tableSeven);
-	WriteToFile(tableSeven, "table-seven.prun");*/
+void clearConsole() {
+	system("cls");
 }
 
 int main()
 {
 	Cube3 cube;
-	std::vector<char> tableOne;
-	std::vector<char> tableTwo;
-	std::vector<char> tableThree;
-	std::vector<char> tableFour;
-	std::vector<char> tableFive;
-	std::vector<char> tableSix;
-	std::vector<char> tableSeven;
+	std::vector<char>tablePhaseOneEC;
+	std::vector<char> tablePhaseOneEUD;
+	std::vector<char> tablePhaseOneCUD;
+	std::vector<char> tablePhaseTwo;
 
 	bool shouldClose = false;
+
+	std::cout << "Welcome to Daniel Rising's -Rubik's Cube Solver- 1.0." << std::endl
+		<< "Type [Help] for program instructions." << std::endl;
+
 	while (!shouldClose)
 	{
 		std::string input;
 		std::cin >> input;
+		clearConsole();
 
 		if (input == "stop" || input == "Stop")
 		{
 			shouldClose = true;
 		}
 
+		else if (input == "help" || input == "Help")
+		{
+			std::cout << "[Stop] - Exits the program." << std::endl
+				<< "[Help] - Prints this message." << std::endl
+				<< "[Print] - Prints the current state of the cube, both graphically as a 2D-visualization of each side of the cube and as a list of positions and rotations." << std::endl
+				<< "[Rotate] x y - Rotate side x (0-Up, 1-Left, 2-Front, 3-Right, 4-Back, 5-Down) with a power of y (1-Quarter Clockwise, 2-Halfturn, 3-Quarter Counter Clockwise)." << std::endl
+				<< "[Scramble] - Applies a 25-move scramble to the cube." << std::endl
+				<< "[Generate] - Generates/Reads/Initalizes pruning tables for solving algorithm." << std::endl
+				<< "[Solve] - (Runs [Generate]) Finds first Kociemba two phase algorithm solution, then applies it to the current cube state." << std::endl;
+		}
+
 		else if (input == "print" || input == "Print")
 		{
 			cube.ConsoleRender();
-			// cube.ConsolePrint();
-		}
-
-		else if (input == "scramble" || input == "Scramble")
-		{
-			int seed = std::chrono::system_clock::now().time_since_epoch().count();
-			cube.Scramble(40, 0, true);
-		}
-
-		else if (input == "solve" || input == "Solve")
-		{
-			auto start = std::chrono::system_clock::now(); // Starting time
-			
-			// Prepare tables
-			if (tableOne.empty()) { // Already prepared?
-				std::ifstream fileOne("table-one.prun");
-				if (fileOne.good()) { // Already generated?
-					ReadTables(tableOne, tableTwo, tableThree, tableFour, tableFive, tableSix, tableSeven);
-				}
-				else {
-					GenerateTables(tableOne, tableTwo, tableThree, tableFour, tableFive, tableSix, tableSeven);
-				}
-			}
-
-			start = std::chrono::system_clock::now(); // Starting time
-
-			std::vector<char> solution;
-
-			std::vector<char> indexIdsOne = { PRUNE_EDGECORNERTWIST, PRUNE_EDGETWIST_UDCOMB, PRUNE_CORNERTWIST_UDCOMB };
-			std::vector<std::vector<char>*> pruneTablesOne = { &tableOne, &tableTwo, &tableThree};
-			std::vector<char> indexIdsTwo = { PRUNE_PHASETWO };
-			std::vector<std::vector<char>*> pruneTablesTwo = { &tableSix };
-
-			cube = KociembaAlgorithm(cube, solution, indexIdsOne, pruneTablesOne, indexIdsTwo, pruneTablesTwo);
-
-
-			const char faces[FACES] = { 'U', 'L', 'F', 'R', 'B', 'D' };
-			const char power[3] = { ' ', '2', 39 };
-
-			for (int i = 0; i < solution.size(); i += 2) {
-				int powIndex = i + 1;
-				if (solution[i] != -1) {
-					std::cout << faces[solution[i]] << power[solution[powIndex] - 1] << " -> ";
-				}
-			}
 			std::cout << std::endl;
-
-			auto end = std::chrono::system_clock::now();
-			std::chrono::duration<double> elapsedSeconds = end - start;
-			std::cout << "Time Elapsed " << elapsedSeconds.count() << "s" << std::endl;
+			cube.ConsolePrint();
 		}
 
 		else if (input == "rotate" || input == "Rotate")
@@ -153,20 +68,36 @@ int main()
 			{
 				cube.Rotate(stoi(move), stoi(power));
 			}
+			cube.ConsoleRender();
+		}
+
+		else if (input == "scramble" || input == "Scramble")
+		{
+			int seed = std::chrono::system_clock::now().time_since_epoch().count();
+			cube.Scramble(25, 0, true);
+			cube.ConsoleRender();
 		}
 
 		else if (input == "generate" || input == "Generate") {
-			GenerateTables(tableOne, tableTwo, tableThree, tableFour, tableFive, tableSix, tableSeven);
+			GenerateTables(tablePhaseOneEC, tablePhaseOneEUD, tablePhaseOneCUD, tablePhaseTwo);
 		}
 
-		else if (input == "read" || input == "Read") {
-			ReadTables(tableOne, tableTwo, tableThree, tableFour, tableFive, tableSix, tableSeven);
-		}
+		else if (input == "solve" || input == "Solve")
+		{			
+			// Prepare tables
+			GenerateTables(tablePhaseOneEC, tablePhaseOneEUD, tablePhaseOneCUD, tablePhaseTwo);
 
-		else if (input == "test" || input == "Test") {
-			for (int i = 0; i < 10000; i++) {
-				std::cout << (int)tableSix[i] << ", ";
-			}
+			// Initialize containers
+			std::vector<char> solution;
+			std::vector<char> indexIdsOne = { PRUNE_EDGECORNERTWIST, PRUNE_EDGETWIST_UDCOMB, PRUNE_CORNERTWIST_UDCOMB };
+			std::vector<std::vector<char>*> pruneTablesOne = { &tablePhaseOneEC, &tablePhaseOneEUD, &tablePhaseOneCUD};
+			std::vector<char> indexIdsTwo = { PRUNE_PHASETWO };
+			std::vector<std::vector<char>*> pruneTablesTwo = { &tablePhaseTwo };
+
+			// Solve
+			cube = KociembaAlgorithm(cube, solution, indexIdsOne, pruneTablesOne, indexIdsTwo, pruneTablesTwo);
+			printFormatted(solution);
+			cube.ConsoleRender();
 		}
 	}
 }

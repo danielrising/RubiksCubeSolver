@@ -3,12 +3,10 @@ RubiksCubeSolver.sln
 RubiksCubeSolver/RubiksCubeSolver.vcxproj
 RubiksCubeSolver/RubiksCubeSolver.vcxproj.filters
 RubiksCubeSolver/RubiksCubeSolver.vcxproj.user
-RubiksCubeSolver/table-one.prun
-RubiksCubeSolver/table-two.prun
-RubiksCubeSolver/table-three.prun
-RubiksCubeSolver/table-four.prun
-RubiksCubeSolver/table-five.prun
-RubiksCubeSolver/table-six.prun
-RubiksCubeSolver/table-seven.prun
+RubiksCubeSolver/phaseone-EC.prun
+RubiksCubeSolver/phaseone-EUD.prun
+RubiksCubeSolver/phaseone-CUD.prun
+RubiksCubeSolver/phasetwo.prun
+
 bin-int
 bin

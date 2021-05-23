@@ -16,26 +16,23 @@
 // Datastructure constants (strides)
 #define MOVE_STRIDE 2
 
+// Pruning index max sizes
+#define UDSLICE_COMBINATION_INDEX_SIZE Choose(E_SIZE, E_PER_SLICE)
+#define EDGE_TWIST_INDEX_SIZE (int)pow(FACELET_PER_EDGE, E_SIZE - 1)
+#define CORNER_TWIST_INDEX_SIZE (int)pow(FACELET_PER_CORNER, C_SIZE - 1)
+#define CORNER_PERM_INDEX_SIZE Factorial(C_SIZE)
+#define UDEDGE_PERM_INDEX_SIZE Factorial(E_SIZE - E_PER_SLICE)
+
 // Pruning table switch
 #define PRUNE_EDGECORNERTWIST 0
 #define PRUNE_EDGETWIST_UDCOMB 1
 #define PRUNE_CORNERTWIST_UDCOMB 2
-#define PRUNE_CORNERPERM 3
-#define PRUNE_EDGEPERM 4
-#define PRUNE_PHASETWO 5
-#define PRUNE_PHASEONE 6
-
-// Pruning index max sizes
-#define UDSLICE_COMBINATION_INDEX_SIZE Choose(E_SIZE, E_PER_SLICE)
-#define EDGE_TWIST_INDEX_SIZE pow(FACELET_PER_EDGE, E_SIZE - 1)
-#define CORNER_TWIST_INDEX_SIZE pow(FACELET_PER_CORNER, C_SIZE - 1)
-#define CORNER_PERM_INDEX_SIZE Factorial(C_SIZE)
-#define UDEDGE_PERM_INDEX_SIZE Factorial(E_SIZE - E_PER_SLICE)
+#define PRUNE_PHASETWO 3
 
 // n choose k
 int Choose(int n, int k);
 // ! (faculty/factorial)
-int Factorial(int n);
+size_t Factorial(int n);
 
 /*3X3X3 CUBE CLASS*/
 class Cube3
@@ -75,8 +72,6 @@ public:
 	void ConsolePrint();
 };
 
-// Move
-
 // Solver-algorithms
 Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves, const std::vector<char>& indexIdsOne, const std::vector<std::vector<char>*>& pruneTablesOne, const std::vector<char>& indexIdsTwo, const std::vector<std::vector<char>*>& pruneTablesTwo);
 Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::vector<char>& moves, const std::vector<char>& possibleMoves, const std::vector<char>& indexIds, const std::vector<std::vector<char>*>& pruneTables);
@@ -85,10 +80,14 @@ Cube3 Treesearch(Cube3 position, char maxDepth, char treeMaxDepth, char depth, c
 // Pruning-tables
 void GeneratePruneTable(std::vector<char>& table, size_t tableSize, std::vector<char> possibleMoves, char indexId, std::string name);
 
-void TableOne(std::vector<char>& table);
-void TableTwo(std::vector<char>& table);
-void TableThree(std::vector<char>& table);
-void TableFour(std::vector<char>& table);
-void TableFive(std::vector<char>& table);
-void TableSix(std::vector<char>& table);
-void TableSeven(std::vector<char>& table);
+void GeneratePhaseOneEC(std::vector<char>& table);
+void GeneratePhaseOneEUD(std::vector<char>& table);
+void GeneratePhaseOneCUD(std::vector<char>& table);
+void GeneratePhaseTwo(std::vector<char>& table);
+
+void WriteToFile(std::vector<char>& table, std::string fileName);
+void ReadFromFile(std::vector<char>& table, std::string fileName);
+void GenerateTables(std::vector<char>& tablePhaseOneEC, std::vector<char>& tablePhaseOneEUD, std::vector<char>& tablePhaseOneCUD, std::vector<char>& tablePhaseTwo);
+
+// Format move number
+void printFormatted(std::vector<char>& moves);

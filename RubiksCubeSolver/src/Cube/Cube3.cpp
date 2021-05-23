@@ -84,7 +84,7 @@ int Choose(int n, int k)
 	return binCoff;
 }
 
-int Factorial(int n)
+size_t Factorial(int n)
 {
 	int factorial = 1;
 	for (int i = n; i > 1; i--) {
@@ -261,7 +261,7 @@ int Cube3::CornerTwistIndex()
 {
 	int index = 0;
 	for (int i = 0; i < C_SIZE - 1; i++) {
-		index += pow(FACELET_PER_CORNER, i) * c[i].GetR();
+		index += (int)pow(FACELET_PER_CORNER, i) * c[i].GetR();
 	}
 	return index;
 }
@@ -297,7 +297,7 @@ int Cube3::CornerPermutationIndex()
 			}
 		}
 
-		index += count * Factorial(i);
+		index += count * (int)Factorial(i);
 	}
 
 	return index;
@@ -323,7 +323,7 @@ int Cube3::UDEdgePermutationIndex()
 			}
 		}
 
-		index += count * Factorial(i);
+		index += count * (int)Factorial(i);
 	}
 
 	return index;
@@ -351,24 +351,10 @@ int Cube3::PruneIndex(char indexId)
 		int y = UDSliceCombinationIndex();
 		return x * UDSLICE_COMBINATION_INDEX_SIZE + y;
 	}
-	case PRUNE_CORNERPERM: {
-		int x = CornerPermutationIndex();
-		return x;
-	}
-	case PRUNE_EDGEPERM: {
-		int x = UDEdgePermutationIndex();
-		return x;
-	}
 	case PRUNE_PHASETWO: {
 		int x = CornerPermutationIndex();
 		int y = UDEdgePermutationIndex();
-		return x * UDEDGE_PERM_INDEX_SIZE + y;
-	}
-	case PRUNE_PHASEONE: {
-		int x = EdgeTwistIndex();
-		int y = CornerTwistIndex();
-		int z = UDSliceCombinationIndex();
-		return x * CORNER_TWIST_INDEX_SIZE * UDSLICE_COMBINATION_INDEX_SIZE + y * UDSLICE_COMBINATION_INDEX_SIZE + z;
+		return x * (int)UDEDGE_PERM_INDEX_SIZE + y;
 	}
 	}
 }
@@ -540,16 +526,30 @@ void Cube3::ConsolePrint()
 // Implementation of the Kociemba algorithm using IterativeDeepening and Treesearch
 Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves, const std::vector<char>& indexIdsOne, const std::vector<std::vector<char>*>& pruneTablesOne, const std::vector<char>& indexIdsTwo, const std::vector<std::vector<char>*>& pruneTablesTwo)
 {
+	// STARTING TIME
+	auto start = std::chrono::system_clock::now();
+	std::cout << "Solving using Kociemba's two phase algorithm." << std::endl
+		<< "IDA Phase one... ";
+
 	std::vector<char> movesOne;
 	std::vector<char> movesTwo;
 
 	// Phase 1
 	position = IterativeDeepening(position, 12, 1, movesOne, subGroupOne, indexIdsOne, pruneTablesOne);
-	
+
+	// PHASE ONE TIME
+	auto second = std::chrono::system_clock::now();;
+	std::chrono::duration<double> elapsedSeconds = second - start;
+	std::cout << "Finished in " << elapsedSeconds.count() << "s " << std::endl
+		<< "IDA Phase two... ";
+
 	// Phase 2
 	position = IterativeDeepening(position, 18, 0, movesTwo, subGroupTwo, indexIdsTwo, pruneTablesTwo);
 	
-	
+	// PHASE TWO TIME
+	elapsedSeconds = std::chrono::system_clock::now() - second;
+	std::cout << "Finished in " << elapsedSeconds.count() << "s" << std::endl;
+
 	// Moves conversion.
 	int movesOneLength = movesOne.size();
 	int movesTwoLength = movesTwo.size();
@@ -563,7 +563,11 @@ Cube3 KociembaAlgorithm(Cube3 position, std::vector<char>& moves, const std::vec
 		int movesPhaseTwoIndex = i + movesOneLength;
 		moves[movesPhaseTwoIndex] = movesTwo[i];
 	}
-	
+
+	// CLOSING TIME
+	elapsedSeconds = std::chrono::system_clock::now() - start;
+	std::cout << "Solved in " << elapsedSeconds.count() << "s total." << std::endl << std::endl;
+
 	return position;
 }
 
@@ -580,7 +584,7 @@ Cube3 IterativeDeepening(Cube3 position, char maxDepth, char solveState, std::ve
 
 	// Iterative deepening
 	for (int i = 0; i <= maxDepth; i++) {
-		std::cout << "Current depth: " << i << std::endl;
+		std::cout << i << "... ";
 		position = Treesearch(position, maxDepth, i, 0, solveState, moves, possibleMoves, indexIds, pruneTables);
 
 		if (position.IsSolved(solveState)) {
@@ -662,22 +666,20 @@ void GeneratePruneTable(std::vector<char>& table, size_t tableSize, std::vector<
 	std::queue<char> fifoQueueDepth;
 	fifoQueue.push(Cube3());
 	fifoQueueDepth.push(0);
+	char depth;
 
 	// Set first table index
 	table[fifoQueue.front().PruneIndex(indexId)] = 0;
 
-	// DEBUG ...
-	long int counter = 0;
-	auto start = std::chrono::system_clock::now(); // Starting time
+	// STARTING TIME
+	auto start = std::chrono::system_clock::now();
 	auto sinceLast = std::chrono::system_clock::now();
-	// ... DEBUG
+	std::cout << "Generating " << name << ", [DEPTH (TIME)]" << std::endl;
 
 	while (!(fifoQueue.empty())) {
-		counter++; // DEBUG
-
 		// Grab queued position
 		Cube3 position = fifoQueue.front();
-		char depth = fifoQueueDepth.front();
+		depth = fifoQueueDepth.front();
 		fifoQueue.pop();
 		fifoQueueDepth.pop();
 
@@ -700,64 +702,170 @@ void GeneratePruneTable(std::vector<char>& table, size_t tableSize, std::vector<
 			position.Rotate(nextMove, C_PER_FACE - nextPower);
 		}
 
-		// DEBUG ...
+		// CLOSING TIME
 		if (!(fifoQueueDepth.empty()) && fifoQueueDepth.front() != depth) {
-			// Elapsed time
-			auto end = std::chrono::system_clock::now();
-			
-			std::chrono::duration<double> elapsedSeconds = end - start;
-			std::chrono::duration<double> elapsedSecondsSinceLast = end - sinceLast;
+			std::chrono::duration<double> elapsedSecondsSinceLast = std::chrono::system_clock::now() - sinceLast;
 
-			std::cout << "Generated " << name << " up to and including depth " << (int)depth << std::endl <<
-				"With a total of " << counter << " positions queued." << std::endl <<
-				"Time elapsed: " << elapsedSecondsSinceLast.count() << "s (" << elapsedSeconds.count() << "s total)" << std::endl <<
-				std::endl;
+			std::cout << (int)depth << " (" << elapsedSecondsSinceLast.count() << "s), ";
 
 			sinceLast = std::chrono::system_clock::now();
-			counter = 0;
 		}
 	}
-	std::cout << "FINISHED TABLE." << std::endl << std::endl;
-	// ... DEBUG
+
+	std::chrono::duration<double> elapsedSeconds = std::chrono::system_clock::now() - start;
+	std::chrono::duration<double> elapsedSecondsSinceLast = std::chrono::system_clock::now() - sinceLast;
+	std::cout << (int)depth << " (" << elapsedSecondsSinceLast.count() << "s)" << std::endl
+		<< "Finished generation in " << elapsedSeconds.count() << "s total." << std::endl;
 }
 
 // EdgeTwistIndex * CornerTwistIndex
-void TableOne(std::vector<char>& table)
+void GeneratePhaseOneEC(std::vector<char>& table)
 {
-	GeneratePruneTable(table, EDGE_TWIST_INDEX_SIZE * CORNER_TWIST_INDEX_SIZE, subGroupOne, PRUNE_EDGECORNERTWIST, "table one");
+	GeneratePruneTable(table, (size_t)EDGE_TWIST_INDEX_SIZE * (size_t)CORNER_TWIST_INDEX_SIZE, subGroupOne, PRUNE_EDGECORNERTWIST, "table one");
 }
 
 // EdgeTwistIndexMax * UDSliceCombinationIndexMax
-void TableTwo(std::vector<char>& table)
+void GeneratePhaseOneEUD(std::vector<char>& table)
 {
-	GeneratePruneTable(table, EDGE_TWIST_INDEX_SIZE * UDSLICE_COMBINATION_INDEX_SIZE, subGroupOne, PRUNE_EDGETWIST_UDCOMB, "table two");
+	GeneratePruneTable(table, (size_t)EDGE_TWIST_INDEX_SIZE * (size_t)UDSLICE_COMBINATION_INDEX_SIZE, subGroupOne, PRUNE_EDGETWIST_UDCOMB, "table two");
 }
 
 // CornerTwistIndex * UDSliceCombinationIndexMax
-void TableThree(std::vector<char>& table)
+void GeneratePhaseOneCUD(std::vector<char>& table)
 {
-	GeneratePruneTable(table, CORNER_TWIST_INDEX_SIZE * UDSLICE_COMBINATION_INDEX_SIZE, subGroupOne, PRUNE_CORNERTWIST_UDCOMB, "table three");
-}
-
-// CornerPermIndex
-void TableFour(std::vector<char>& table)
-{
-	GeneratePruneTable(table, CORNER_PERM_INDEX_SIZE, subGroupTwo, PRUNE_CORNERPERM, "table four");
-}
-
-// UDEdgePermIndex
-void TableFive(std::vector<char>& table)
-{
-	GeneratePruneTable(table, UDEDGE_PERM_INDEX_SIZE, subGroupTwo, PRUNE_EDGEPERM, "table five");
+	GeneratePruneTable(table, (size_t)CORNER_TWIST_INDEX_SIZE * (size_t)UDSLICE_COMBINATION_INDEX_SIZE, subGroupOne, PRUNE_CORNERTWIST_UDCOMB, "table three");
 }
 
 // CornerPermIndex * UDEdgePermIndex
-void TableSix(std::vector<char>& table)
+void GeneratePhaseTwo(std::vector<char>& table)
 {
-	GeneratePruneTable(table, CORNER_PERM_INDEX_SIZE * UDEDGE_PERM_INDEX_SIZE, subGroupTwo, PRUNE_PHASETWO, "table six");
+	GeneratePruneTable(table, CORNER_PERM_INDEX_SIZE * UDEDGE_PERM_INDEX_SIZE, subGroupTwo, PRUNE_PHASETWO, "phase two");
 }
 
-void TableSeven(std::vector<char>& table)
+void WriteToFile(std::vector<char>& table, std::string fileName) {
+	// STARTING TIME
+	auto start = std::chrono::system_clock::now();
+	std::cout << "Writing to disk, as " << fileName << "... ";
+
+	// Writing to file
+	std::ofstream fOut(fileName);
+	for (long int i = 0; i < table.size(); i++) {
+		fOut << table[i];
+	}
+	fOut.close();
+
+	// CLOSING TIME
+	std::chrono::duration<double> elapsedSeconds = std::chrono::system_clock::now() - start;
+	std::cout << " Finished in " << elapsedSeconds.count() << "s" << std::endl;
+}
+
+void ReadFromFile(std::vector<char>& table, std::string fileName) {
+	// STARTING TIME
+	auto start = std::chrono::system_clock::now();
+	std::cout << "Reading disk, from " << fileName << "... ";
+
+	// Reading from file
+	std::ifstream fIn(fileName);
+	char c;
+	while (fIn.get(c)) {
+		table.push_back(c);
+	}
+
+	// CLOSING TIME
+	std::chrono::duration<double> elapsedSeconds = std::chrono::system_clock::now() - start;
+	std::cout << " Finished in " << elapsedSeconds.count() << "s" << std::endl;
+}
+
+void GenerateTables(std::vector<char>& tablePhaseOneEC, std::vector<char>& tablePhaseOneEUD, std::vector<char>& tablePhaseOneCUD, std::vector<char>& tablePhaseTwo) {
+	std::ifstream temp;
+
+	// Phase one
+	if (tablePhaseOneEC.empty()) {
+		temp.open("phaseone-EC.prun");
+		if (temp.good()) {
+			tablePhaseOneEC.reserve(EDGE_TWIST_INDEX_SIZE * CORNER_TWIST_INDEX_SIZE);
+			ReadFromFile(tablePhaseOneEC, "phaseone-EC.prun");
+		}
+		else {
+			GeneratePhaseOneEC(tablePhaseOneEC);
+			WriteToFile(tablePhaseOneEC, "phaseone-EC.prun");
+		}
+		temp.close();
+	}
+	else {
+		std::cout << "Skipped phaseone-EC.prun. (Already initialized)" << std::endl;
+	}
+	std::cout << std::endl;
+
+	if (tablePhaseOneEUD.empty()) {
+		temp.open("phaseone-EUD.prun");
+		if (temp.good()) {
+			tablePhaseOneEUD.reserve(UDSLICE_COMBINATION_INDEX_SIZE * EDGE_TWIST_INDEX_SIZE);
+			ReadFromFile(tablePhaseOneEUD, "phaseone-EUD.prun");
+		}
+		else {
+			GeneratePhaseOneEUD(tablePhaseOneEUD);
+			WriteToFile(tablePhaseOneEUD, "phaseone-EUD.prun");
+		}
+		temp.close();
+	}
+	else {
+		std::cout << "Skipped phaseone-EUD.prun. (Already initialized)" << std::endl;
+	}
+	std::cout << std::endl;
+
+	if (tablePhaseOneCUD.empty()) {
+		temp.open("phaseone-CUD.prun");
+		if (temp.good()) {
+			tablePhaseOneCUD.reserve(UDSLICE_COMBINATION_INDEX_SIZE * CORNER_TWIST_INDEX_SIZE);
+			ReadFromFile(tablePhaseOneCUD, "phaseone-CUD.prun");
+		}
+		else {
+			GeneratePhaseOneCUD(tablePhaseOneCUD);
+			WriteToFile(tablePhaseOneCUD, "phaseone-CUD.prun");
+		}
+		temp.close();
+	}
+	else {
+		std::cout << "Skipped phaseone-CUD.prun. (Already initialized)" << std::endl;
+	}
+	std::cout << std::endl;
+
+	// Phase two
+	if (tablePhaseTwo.empty()) {
+		temp.open("phasetwo.prun");
+		if (temp.good()) {
+			tablePhaseTwo.reserve(CORNER_PERM_INDEX_SIZE * UDEDGE_PERM_INDEX_SIZE);
+			ReadFromFile(tablePhaseTwo, "phasetwo.prun");
+		}
+		else {
+			GeneratePhaseTwo(tablePhaseTwo);
+			WriteToFile(tablePhaseTwo, "phasetwo.prun");
+		}
+		temp.close();
+	}
+	else {
+		std::cout << "Skipped phasetwo.prun. (Already initialized)" << std::endl;
+	}
+	std::cout << std::endl;
+}
+
+void printFormatted(std::vector<char>& moves)
 {
-	GeneratePruneTable(table, UDSLICE_COMBINATION_INDEX_SIZE * EDGE_TWIST_INDEX_SIZE * CORNER_TWIST_INDEX_SIZE, subGroupOne, PRUNE_PHASEONE, "table seven");
+	if (moves.empty()) {
+		return;
+	}
+
+	const char faces[FACES] = { 'U', 'L', 'F', 'R', 'B', 'D' };
+	const char power[3] = { ' ', '2', 39 };
+
+	std::cout << faces[moves[0]] << power[moves[1] - 1];
+	for (int i = MOVE_STRIDE; i < moves.size(); i += MOVE_STRIDE) {
+		int powIndex = i + 1;
+
+		if (moves[i] != -1) {
+			std::cout << " -> " << faces[moves[i]] << power[moves[powIndex] - 1];
+		}
+	}
+	std::cout << std::endl << std::endl;
 }
